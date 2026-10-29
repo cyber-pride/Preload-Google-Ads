@@ -31,6 +31,10 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = false
             isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 
@@ -39,6 +43,10 @@ android {
         abortOnError = false
         disable.add("NullSafeMutableLiveData")
     }
+}
+
+dependencies {
+    implementation("androidx.work:work-runtime:2.11.2")
 }
 
 flutter {

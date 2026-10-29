@@ -31,6 +31,7 @@ android {
 
     defaultConfig {
         minSdk = 21
+        consumerProguardFiles 'proguard-rules.pro'
     }
 
     dependencies {
@@ -53,4 +54,5 @@ android {
 
 dependencies {
     implementation 'com.intuit.sdp:sdp-android:1.1.0'
+    implementation 'androidx.work:work-runtime:2.11.2'
 }

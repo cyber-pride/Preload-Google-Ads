@@ -63,6 +63,9 @@ class BannerADLayout {
   /// The margin of the container surrounding the banner ad.
   EdgeInsets? margin;
 
+  /// The custom height for the banner ad container.
+  double? height;
+
   /// Constructor for [BannerADLayout] with Light Mode and Dark Mode decoration options.
   BannerADLayout({
     BoxDecoration? lightDecoration,
@@ -70,6 +73,7 @@ class BannerADLayout {
     this.darkDecoration,
     this.padding,
     this.margin,
+    this.height,
   }) : lightDecoration = lightDecoration ?? decoration;
 }
 
