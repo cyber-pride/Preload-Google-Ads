@@ -79,7 +79,7 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
   Widget adView() {
     try {
       final double nativeHeight = banner!.size.height.toDouble();
-      final double targetHeight = nativeHeight > 0 ? nativeHeight : 50.0;
+      final double targetHeight = (nativeHeight > 0) ? nativeHeight : 50.0;
       final isDark = NativeADStyle.instance.isDarkMode(context: context);
 
       final bannerLayout = config.bannerADLayout;
@@ -94,8 +94,9 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
         padding: bannerLayout?.padding,
         alignment: Alignment.center,
         child: SizedBox(
-          width: banner!.size.width > 0 ? banner!.size.width.toDouble() : double.infinity,
+          width: (banner!.size.width > 0) ? banner!.size.width.toDouble() : double.infinity,
           height: targetHeight,
+
           child: AdWidget(ad: banner!),
         )
       );
