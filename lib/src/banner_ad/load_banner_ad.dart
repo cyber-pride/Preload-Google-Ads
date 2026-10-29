@@ -40,26 +40,29 @@ class LoadBannerAd extends BaseAdLoader {
     BannerAd? bannerAd;
 
     try {
-      // Get the current screen's physical size.
-      final view = PlatformDispatcher.instance.implicitView;
-      if (view == null) {
-        state = AdLoadState.failed;
-        return;
+      AdSize? size = config.bannerADLayout?.adSize;
+
+      if (size == null) {
+        // Get the current screen's physical size.
+        final view = PlatformDispatcher.instance.implicitView;
+        if (view == null) {
+          state = AdLoadState.failed;
+          return;
+        }
+
+        final double logicalScreenWidth =
+            view.physicalSize.width / view.devicePixelRatio;
+
+        if (logicalScreenWidth <= 0) {
+          state = AdLoadState.failed;
+          return;
+        }
+
+        // Get the appropriate size for the banner ad based on the screen width.
+        size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(
+          logicalScreenWidth.toInt(),
+        );
       }
-
-      final double logicalScreenWidth =
-          view.physicalSize.width / view.devicePixelRatio;
-
-      if (logicalScreenWidth <= 0) {
-        state = AdLoadState.failed;
-        return;
-      }
-
-      // Get the appropriate size for the banner ad based on the screen width.
-      final AnchoredAdaptiveBannerAdSize? size =
-          await AdSize.getLargeAnchoredAdaptiveBannerAdSize(
-        logicalScreenWidth.toInt(),
-      );
 
       if (size == null) {
         state = AdLoadState.failed;

@@ -113,7 +113,7 @@ Future<AdConfigData> setConfigData(AdConfigData? adConfig) async {
           preData.bannerADLayout?.darkDecoration,
       margin: adConfig?.bannerADLayout?.margin ?? preData.bannerADLayout?.margin,
       padding: adConfig?.bannerADLayout?.padding ?? preData.bannerADLayout?.padding,
-      height: adConfig?.bannerADLayout?.height ?? preData.bannerADLayout?.height,
+      adSize: adConfig?.bannerADLayout?.adSize ?? preData.bannerADLayout?.adSize,
     ),
   );
 }

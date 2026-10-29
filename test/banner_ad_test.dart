@@ -39,5 +39,15 @@ void main() {
       );
       expect(widgetCollapsibleTop.collapsiblePosition, equals(CollapsibleBannerPosition.top));
     });
+
+    test('BannerADLayout accepts custom adSize property', () {
+      final customLayout = BannerADLayout(
+        adSize: AdSize.fullBanner,
+      );
+      expect(customLayout.adSize, equals(AdSize.fullBanner));
+
+      final config = AdConfigData(bannerADLayout: customLayout);
+      expect(config.bannerADLayout?.adSize, equals(AdSize.fullBanner));
+    });
   });
 }

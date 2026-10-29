@@ -25,12 +25,17 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
 
   Future<void> _loadStandardBanner() async {
     try {
-      final view = PlatformDispatcher.instance.implicitView;
-      if (view == null) return;
-      final double logicalScreenWidth = view.physicalSize.width / view.devicePixelRatio;
-      if (logicalScreenWidth <= 0) return;
+      AdSize? size = config.bannerADLayout?.adSize;
 
-      final size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(logicalScreenWidth.toInt());
+      if (size == null) {
+        final view = PlatformDispatcher.instance.implicitView;
+        if (view == null) return;
+        final double logicalScreenWidth = view.physicalSize.width / view.devicePixelRatio;
+        if (logicalScreenWidth <= 0) return;
+
+        size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(logicalScreenWidth.toInt());
+      }
+
       if (size == null) return;
 
       final stdBanner = BannerAd(
@@ -73,11 +78,11 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
   /// Builds the widget to display the banner ad.
   Widget adView() {
     try {
-      final bannerLayout = config.bannerADLayout;
       final double nativeHeight = banner!.size.height.toDouble();
-      final double targetHeight = bannerLayout?.height ?? (nativeHeight > 0 ? nativeHeight : 50.0);
+      final double targetHeight = nativeHeight > 0 ? nativeHeight : 50.0;
       final isDark = NativeADStyle.instance.isDarkMode(context: context);
 
+      final bannerLayout = config.bannerADLayout;
       final decoration = (isDark && bannerLayout?.darkDecoration != null)
           ? bannerLayout?.darkDecoration
           : bannerLayout?.lightDecoration;
@@ -88,14 +93,11 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
         margin: bannerLayout?.margin,
         padding: bannerLayout?.padding,
         alignment: Alignment.center,
-        child: FittedBox(
-          fit: BoxFit.contain,
-          child: SizedBox(
-            width: banner!.size.width > 0 ? banner!.size.width.toDouble() : double.infinity,
-            height: targetHeight,
-            child: AdWidget(ad: banner!),
-          ),
-        ),
+        child: SizedBox(
+          width: banner!.size.width > 0 ? banner!.size.width.toDouble() : double.infinity,
+          height: targetHeight,
+          child: AdWidget(ad: banner!),
+        )
       );
     } catch (e) {
       return const SizedBox.shrink();

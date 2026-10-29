@@ -86,11 +86,11 @@ class _ShowCollapsibleBannerAdState extends State<ShowCollapsibleBannerAd> {
     if (banner == null) return const SizedBox.shrink();
 
     try {
-      final bannerLayout = config.bannerADLayout;
       final double nativeHeight = banner!.size.height.toDouble();
-      final double targetHeight = bannerLayout?.height ?? (nativeHeight > 0 ? nativeHeight : 50.0);
+      final double targetHeight = nativeHeight > 0 ? nativeHeight : 50.0;
       final isDark = NativeADStyle.instance.isDarkMode(context: context);
 
+      final bannerLayout = config.bannerADLayout;
       final decoration = (isDark && bannerLayout?.darkDecoration != null)
           ? bannerLayout?.darkDecoration
           : bannerLayout?.lightDecoration;
