@@ -17,40 +17,172 @@ class AdManager {
   /// The current ad configuration
   AdConfigData config = preData;
 
+  /// Whether ad requests are currently allowed.
+  ///
+  /// Always true unless [AdConfigData.requireConsent] is set, in which case it
+  /// mirrors `ConsentInformation.canRequestAds()`. Every loader checks this
+  /// before requesting an ad.
+  bool canRequestAds = true;
+
+  bool _sdkStarted = false;
+
   /// Initializes the AdManager with the provided ad configuration.
-  /// It also initializes mobile ads and loads the required ads based on the configuration.
+  ///
+  /// Flow (Google recommended):
+  /// 1. If [AdConfigData.requireConsent] is set, gather UMP consent first.
+  /// 2. Start the Mobile Ads SDK once ads may be requested.
+  /// 3. Preload one ad per enabled format and register the App Open listener.
   Future<void> initialize(AdConfigData? adConfig) async {
-    // Set the ad configuration data
     config = await setConfigData(adConfig);
 
     // Sync initial native channel ad style based on configured mode
     await _syncNativeAdStyle();
 
-    // Initialize the Google Mobile Ads SDK
-    await MobileAds.instance.initialize();
+    if (config.requireConsent) {
+      canRequestAds = false;
+      await _gatherConsent();
+      canRequestAds = await _safeCanRequestAds();
+    } else {
+      canRequestAds = true;
+    }
 
-    // High Match-Rate & Non-Intrusive UX Strategy:
-    // Mobile Ads SDK initialized cleanly without forcing any splash ad on app startup.
-    // Ads are loaded purely on-demand when requested by the application.
+    if (!canRequestAds) {
+      AppLogger.warn(
+        'Consent not obtained: ads will not be requested. '
+        'They start automatically if consent is given via showPrivacyOptionsForm().',
+      );
+      return;
+    }
+    await _startSdkAndPreload();
+  }
+
+  /// Starts the SDK and preloads ads exactly once.
+  Future<void> _startSdkAndPreload() async {
+    if (!_sdkStarted) {
+      await MobileAds.instance.initialize();
+      _sdkStarted = true;
+    }
+
+    // Google-recommended preloading: once the SDK is ready, load exactly one ad
+    // for each enabled format so the first show is instant. Each loader refills
+    // itself only after its ad is shown, so requests stay ~1:1 with impressions
+    // (good show rate). Disable formats you don't use via AdFlag to avoid
+    // requesting ads that will never be shown.
+    // Nothing is shown here: no ad is forced on app launch.
+    reloadUnloadedAds();
+
+    // Show App Open ads when the user returns to the app (registered once).
+    if (shouldShowOpenAppAd) {
+      await LifeCycleManager.instance.getOpenAppAdvertise();
+    }
+  }
+
+  /// Requests the latest consent info and shows the consent form if required.
+  /// Never throws; on any error the previously stored consent still applies.
+  Future<void> _gatherConsent() async {
+    final updated = Completer<void>();
+    ConsentInformation.instance.requestConsentInfoUpdate(
+      config.consentRequestParameters ?? ConsentRequestParameters(),
+      () => updated.complete(),
+      (FormError error) {
+        AppLogger.error('Consent info update failed: ${error.message}');
+        updated.complete();
+      },
+    );
+    await updated.future;
+
+    final dismissed = Completer<void>();
+    try {
+      await ConsentForm.loadAndShowConsentFormIfRequired((FormError? error) {
+        if (error != null) {
+          AppLogger.error('Consent form error: ${error.message}');
+        }
+        if (!dismissed.isCompleted) dismissed.complete();
+      });
+      await dismissed.future;
+    } catch (e) {
+      AppLogger.error('Consent form failed: $e');
+    }
+  }
+
+  Future<bool> _safeCanRequestAds() async {
+    try {
+      return await ConsentInformation.instance.canRequestAds();
+    } catch (e) {
+      AppLogger.error('canRequestAds failed: $e');
+      return false;
+    }
+  }
+
+  /// Whether the app must show a "Privacy settings" entry point
+  /// (Google requires one when this is true).
+  Future<bool> isPrivacyOptionsRequired() async {
+    if (!config.requireConsent) return false;
+    try {
+      final status =
+          await ConsentInformation.instance.getPrivacyOptionsRequirementStatus();
+      return status == PrivacyOptionsRequirementStatus.required;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Shows the UMP privacy options form so users can change their choice.
+  /// If ads become allowed afterwards, the SDK starts and preloading begins.
+  Future<void> showPrivacyOptionsForm() async {
+    final dismissed = Completer<void>();
+    try {
+      await ConsentForm.showPrivacyOptionsForm((FormError? error) {
+        if (error != null) {
+          AppLogger.error('Privacy options form error: ${error.message}');
+        }
+        if (!dismissed.isCompleted) dismissed.complete();
+      });
+      await dismissed.future;
+    } catch (e) {
+      AppLogger.error('Privacy options form failed: $e');
+      return;
+    }
+
+    final allowed = await _safeCanRequestAds();
+    final wasAllowed = canRequestAds;
+    canRequestAds = allowed;
+    if (allowed && !wasAllowed) {
+      await _startSdkAndPreload();
+    }
   }
 
   /// Sets the ad theme mode dynamically at runtime and updates native styles.
+  ///
+  /// Cached (not yet displayed) native ads were rendered with the old style,
+  /// so they are replaced when the effective light/dark mode changes.
   Future<void> setThemeMode(AdThemeMode mode, {BuildContext? context}) async {
-    config = AdConfigData(
-      adIDs: config.adIDs,
-      adCounter: config.adCounter,
-      adFlag: config.adFlag,
-      nativeADLayout: config.nativeADLayout,
-      bannerADLayout: config.bannerADLayout,
-      themeMode: mode,
-    );
+    final wasDark = NativeADStyle.instance.isDarkMode(context: context);
+    config = config.copyWith(themeMode: mode);
+    final isDark = NativeADStyle.instance.isDarkMode(context: context);
     await _syncNativeAdStyle(context: context);
+
+    if (wasDark != isDark && !isFlutterLayout) {
+      for (final loader in [LoadMediumNative.instance, LoadSmallNative.instance]) {
+        if (loader.ads.isNotEmpty) {
+          loader.reset();
+          loader.loadAd();
+        }
+      }
+    }
   }
 
   /// Syncs native Kotlin/Swift ad styling via MethodChannel.
+  ///
+  /// Never throws: a styling failure must not stop the SDK from initializing
+  /// or ads from loading.
   Future<void> _syncNativeAdStyle({BuildContext? context}) async {
-    final style = NativeADStyle.instance.getCustomStyle(context: context);
-    await setAdStyleData(style);
+    try {
+      final style = NativeADStyle.instance.getCustomStyle(context: context);
+      await setAdStyleData(style);
+    } catch (e) {
+      AppLogger.error("Failed to sync native ad style: $e");
+    }
   }
 
   /// Force reloads native ads (Small or Medium).
@@ -72,7 +204,7 @@ class AdManager {
 
   /// Triggers background reloading of any ad format that failed or was lost due to network issues.
   void reloadUnloadedAds() {
-    if (!shouldShowAd) return;
+    if (!shouldShowAd || !canRequestAds) return;
 
     if (shouldShowRewardedAd && !RewardAd.instance.isAdLoaded) {
       RewardAd.instance.load();

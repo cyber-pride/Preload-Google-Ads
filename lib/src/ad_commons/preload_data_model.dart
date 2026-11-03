@@ -32,6 +32,18 @@ class AdConfigData {
   /// Theme mode for ad styling (system, light, or dark).
   final AdThemeMode themeMode;
 
+  /// When true, `initialize()` runs Google's User Messaging Platform (UMP)
+  /// consent flow before the Mobile Ads SDK starts, and no ad is requested
+  /// until `ConsentInformation.canRequestAds()` is true.
+  ///
+  /// Required by Google for apps with users in the EEA, UK and Switzerland.
+  /// Create a GDPR message in AdMob → Privacy & messaging first.
+  final bool requireConsent;
+
+  /// Optional UMP request parameters (e.g. debug geography for testing,
+  /// tag for under age of consent). Used only when [requireConsent] is true.
+  final ConsentRequestParameters? consentRequestParameters;
+
   /// Constructor for [AdConfigData].
   AdConfigData({
     this.adIDs,
@@ -40,7 +52,23 @@ class AdConfigData {
     this.nativeADLayout,
     this.bannerADLayout,
     this.themeMode = AdThemeMode.system,
+    this.requireConsent = false,
+    this.consentRequestParameters,
   });
+
+  /// Returns a copy with the given fields replaced.
+  AdConfigData copyWith({AdThemeMode? themeMode, AdFlag? adFlag}) {
+    return AdConfigData(
+      adIDs: adIDs,
+      adCounter: adCounter,
+      adFlag: adFlag ?? this.adFlag,
+      nativeADLayout: nativeADLayout,
+      bannerADLayout: bannerADLayout,
+      themeMode: themeMode ?? this.themeMode,
+      requireConsent: requireConsent,
+      consentRequestParameters: consentRequestParameters,
+    );
+  }
 }
 
 /// Configuration for the layout of banner ads.
@@ -279,13 +307,13 @@ class CustomNativeADStyle {
     BoxConstraints? mediumBoxConstrain,
     BoxConstraints? smallBoxConstrain,
   })  : buttonGradients = buttonGradients ?? [],
-        mediumBoxConstrain = BoxConstraints(
+        mediumBoxConstrain = mediumBoxConstrain ?? BoxConstraints(
           minWidth: 320,
           minHeight: 210,
           maxWidth: 400,
           maxHeight: 265,
         ),
-        smallBoxConstrain = BoxConstraints(
+        smallBoxConstrain = smallBoxConstrain ?? BoxConstraints(
           minWidth: 320,
           minHeight: 57,
           maxWidth: 400,
@@ -385,13 +413,13 @@ class FlutterNativeADStyle {
             ),
         mainBackgroundColor = mainBackgroundColor ?? Colors.white,
         cornerRadius = cornerRadius ?? 5.0,
-        mediumBoxConstrain = BoxConstraints(
+        mediumBoxConstrain = mediumBoxConstrain ?? BoxConstraints(
           minWidth: 320,
           minHeight: 280,
           maxWidth: 400,
           maxHeight: 365,
         ),
-        smallBoxConstrain = BoxConstraints(
+        smallBoxConstrain = smallBoxConstrain ?? BoxConstraints(
           minWidth: 320,
           minHeight: 88,
           maxWidth: 400,

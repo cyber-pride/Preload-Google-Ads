@@ -81,8 +81,11 @@ class RewardAd extends BaseAdLoader {
       state = AdLoadState.showing;
 
       _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (_) => FullScreenAdGuard.onShown(),
+        onAdClicked: (_) => FullScreenAdGuard.onClicked(),
         // Called when the ad is dismissed.
         onAdDismissedFullScreenContent: (ad) {
+          FullScreenAdGuard.onDismissed();
           callBack(ad: ad as RewardedAd?); // Callback after ad is dismissed.
           ad.dispose();
           _rewardedAd = null;
@@ -95,6 +98,7 @@ class RewardAd extends BaseAdLoader {
         },
         // Called if the ad fails to show.
         onAdFailedToShowFullScreenContent: (ad, error) {
+          FullScreenAdGuard.onDismissed();
           callBack(ad: ad as RewardedAd?, error: error); // Callback on failure to show.
           AppLogger.error('$ad failed to show: $error');
           _rewardedAd = null;

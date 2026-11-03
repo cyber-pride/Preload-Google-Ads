@@ -55,6 +55,12 @@ class RewardInterAd extends BaseAdLoader {
     required Function({RewardedInterstitialAd? ad, AdError? error}) callBack,
     required Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {
+    incrementCounter();
+    if (counter < getRewardedInterCounter) {
+      callBack();
+      return;
+    }
+
     if (shouldShowRewardedInterAd && _rewardedInterstitialAd != null && isAdLoaded) {
       // Check if ad expired (AdMob 4-hour TTL rule)
       if (isExpired) {
@@ -73,7 +79,10 @@ class RewardInterAd extends BaseAdLoader {
 
       _rewardedInterstitialAd!.fullScreenContentCallback =
           FullScreenContentCallback(
+        onAdShowedFullScreenContent: (_) => FullScreenAdGuard.onShown(),
+        onAdClicked: (_) => FullScreenAdGuard.onClicked(),
         onAdDismissedFullScreenContent: (ad) {
+          FullScreenAdGuard.onDismissed();
           callBack(ad: ad as RewardedInterstitialAd?);
           ad.dispose();
           _rewardedInterstitialAd = null;
@@ -84,6 +93,7 @@ class RewardInterAd extends BaseAdLoader {
           AdStats.instance.rewardedInterImp.value++;
         },
         onAdFailedToShowFullScreenContent: (ad, error) {
+          FullScreenAdGuard.onDismissed();
           callBack(ad: ad as RewardedInterstitialAd?, error: error);
           AppLogger.error('$ad failed to show: $error');
           _rewardedInterstitialAd = null;
@@ -99,8 +109,7 @@ class RewardInterAd extends BaseAdLoader {
         },
       );
     } else {
-      incrementCounter();
-      if (!isAdLoaded || _rewardedInterstitialAd == null) {
+      if (!isAdLoaded && state != AdLoadState.loading) {
         load(); // Recovery load if missing or network restored
       }
       callBack();

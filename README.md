@@ -50,7 +50,7 @@ Add this to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  preload_google_ads: ^1.0.7
+  preload_google_ads: ^1.0.8
 ```
 
 Or run:
@@ -109,6 +109,34 @@ void main() async {
 }
 ```
 
+`initialize()` starts the SDK and preloads **one ad per enabled format**, so the first show is instant. Nothing is shown at launch. Turn off formats you don't use in `AdFlag`, so the package never requests ads that won't be shown (this keeps your show rate high).
+
+---
+
+## User Consent (GDPR / UMP)
+
+If you have users in the EEA, UK or Switzerland, Google requires consent through its User Messaging Platform before ads are requested. Create a GDPR message in **AdMob → Privacy & messaging**, then set `requireConsent: true`:
+
+```dart
+await PreloadGoogleAds.instance.initialize(
+  adConfigData: AdConfigData(
+    requireConsent: true,
+    adIDs: AdIDS(/* your IDs */),
+  ),
+);
+```
+
+`initialize()` then shows Google's consent form when needed, and only starts the SDK and requests ads once `canRequestAds` is true. Google also requires a way for users to change their choice:
+
+```dart
+if (await PreloadGoogleAds.instance.isPrivacyOptionsRequired()) {
+  // Show a "Privacy settings" button in your settings screen:
+  await PreloadGoogleAds.instance.showPrivacyOptionsForm();
+}
+```
+
+To test outside the EEA, pass `consentRequestParameters` with `ConsentDebugSettings(debugGeography: DebugGeography.debugGeographyEea, testIdentifiers: [...])`.
+
 ---
 
 ## Advanced Configuration
@@ -120,10 +148,10 @@ Control specifically which ads to show and how frequently they appear.
 PreloadGoogleAds.instance.initialize(
   adConfigData: AdConfigData(
     adCounter: AdCounter(
-      interstitialCounter: 2,        // Show every 2 clicks
+      interstitialCounter: 3,        // Show every 3rd trigger (default: 3)
       nativeCounter: 0,              // Show every time
       rewardedCounter: 1,            // Show every click
-      rewardedInterCounter: 1,       // Show every click
+      rewardedInterstitialCounter: 1, // Show every click
     ),
     adFlag: AdFlag(
       showAd: true,
@@ -132,8 +160,7 @@ PreloadGoogleAds.instance.initialize(
       showNative: true,
       showOpenApp: true,
       showRewarded: true,
-      showRewardedInter: true,
-      showSplashAd: false,
+      showRewardedInterstitial: true,
     ),
   ),
 );
@@ -275,15 +302,20 @@ PreloadGoogleAds.instance.showOpenApp();
 > [!TIP]
 > **Pro Tip**: To show an ad during navigation, place your navigation logic inside the `callBack`. This ensures the transition happens exactly when the ad is closed or fails to load.
 
-### Splash Ad Callback
-Show an app open ad immediately on splash and navigate when ready.
+### Rewarded Ads: Best Practice
+Only offer a "Watch ad" button when an ad is ready, and grant the reward only in `onReward` (`callBack` also fires when no ad was shown):
 
 ```dart
-PreloadGoogleAds.instance.setSplashAdCallback((ad, error) {
-  // Navigate to Home after splash ad completes
-  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeView()));
-});
+if (PreloadGoogleAds.instance.isRewardedAdReady) {
+  PreloadGoogleAds.instance.showRewardedAd(
+    callBack: (ad, error) {},
+    onReward: (ad, reward) => grantCoins(reward.amount),
+  );
+}
 ```
+
+### App Open Ads
+App Open ads are shown automatically when the user returns to the app. They are skipped while another full-screen ad is open, for a few seconds after one closes, and when the user comes back from clicking an ad.
 
 ### Diagnostic Counter
 Enable the built-in counter to track ad status in real-time during development.
@@ -293,7 +325,7 @@ PreloadGoogleAds.instance.showAdCounter(showCounter: true);
 ```
 
 > [!IMPORTANT]
-> **Ad IDs**: Always replace the test IDs with your production AdMob IDs before publishing. Using test IDs in production may result in no ads being served or policy violations.
+> **Ad IDs**: Use Google's test IDs while developing, and never click your own live ads. In **release** builds, any enabled format without an ad unit ID is turned off (it never falls back to test ads), and a warning is printed if you pass a test ID.
 
 ---
 

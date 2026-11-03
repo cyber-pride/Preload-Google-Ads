@@ -89,8 +89,12 @@ class InterAd extends BaseAdLoader {
 
       _interstitialAd!
         ..fullScreenContentCallback = FullScreenContentCallback(
+          onAdShowedFullScreenContent: (_) => FullScreenAdGuard.onShown(),
+          onAdClicked: (_) => FullScreenAdGuard.onClicked(),
+
           /// Called when the ad is dismissed.
           onAdDismissedFullScreenContent: (ad) {
+            FullScreenAdGuard.onDismissed();
             callBack(ad: ad as InterstitialAd?);
             ad.dispose();
             _interstitialAd = null;
@@ -105,6 +109,7 @@ class InterAd extends BaseAdLoader {
 
           /// Called if the ad fails to show.
           onAdFailedToShowFullScreenContent: (ad, error) {
+            FullScreenAdGuard.onDismissed();
             callBack(ad: ad as InterstitialAd?, error: error);
             AppLogger.error('$ad onAdFailedToShowFullScreenContent: $error');
             ad.dispose();

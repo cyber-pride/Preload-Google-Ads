@@ -14,23 +14,19 @@ class LifeCycleManager {
   LifeCycleManager._internal();
 
   /// Instance of AppOpenAdManager to manage app open ads.
-  late AppOpenAdManager appOpenAdManager;
+  AppOpenAdManager appOpenAdManager = AppOpenAdManager.instance;
 
-  /// Instance of AppLifecycleReactor to listen for app state changes.
-  late AppLifecycleReactor _appLifecycleReactor;
+  AppLifecycleReactor? _appLifecycleReactor;
 
-  /// Initializes the app open ad manager and starts listening to app state changes.
+  /// Preloads an App Open ad and starts listening for the app returning to the
+  /// foreground. Safe to call more than once: the listener is registered only once.
   Future<void> getOpenAppAdvertise() async {
-    // Load the ad and prepare the lifecycle reactor for app state changes.
-    appOpenAdManager = AppOpenAdManager()..loadAd();
+    appOpenAdManager.loadAd();
 
-    // Create an instance of AppLifecycleReactor and pass the appOpenAdManager to it.
+    if (_appLifecycleReactor != null) return;
     _appLifecycleReactor = AppLifecycleReactor(
       appOpenAdManager: appOpenAdManager,
-    );
-
-    // Start listening to app state changes.
-    _appLifecycleReactor.listenToAppStateChanges();
+    )..listenToAppStateChanges();
   }
 }
 
@@ -42,29 +38,36 @@ class AppLifecycleReactor {
   /// Constructor that requires an instance of AppOpenAdManager.
   AppLifecycleReactor({required this.appOpenAdManager});
 
+  StreamSubscription<AppState>? _subscription;
+
   /// Starts listening for app state changes and reacts accordingly.
   void listenToAppStateChanges() {
-    /// Begin listening to the app's state changes.
+    if (_subscription != null) return;
     AppStateEventNotifier.startListening();
-
-    /// For each state change, call _onAppStateChanged to react to it.
-    AppStateEventNotifier.appStateStream.forEach(
-      (state) => _onAppStateChanged(state),
-    );
+    _subscription = AppStateEventNotifier.appStateStream.listen(_onAppStateChanged);
   }
 
-  /// Handles changes in the app's state (e.g., when the app moves to the foreground).
-  /// If appropriate, it triggers the app open ad to be shown.
+  /// Stops listening for app state changes.
+  void dispose() {
+    _subscription?.cancel();
+    _subscription = null;
+    AppStateEventNotifier.stopListening();
+  }
+
+  /// Shows an App Open ad when the app returns to the foreground, unless the
+  /// user is coming back from another full-screen ad or from clicking an ad.
   void _onAppStateChanged(AppState appState) {
-    /// Log the new app state for debugging purposes.
     AppLogger.log('New AppState state: $appState');
 
-    /// Check if the app should show an open app ad.
-    if (shouldShowOpenAppAd) {
-      /// If the app is in the foreground, show the app open ad.
-      if (appState == AppState.foreground) {
-        appOpenAdManager.showAdIfAvailable();
-      }
+    if (appState != AppState.foreground || !shouldShowOpenAppAd) return;
+
+    if (!FullScreenAdGuard.canShowAppOpen()) {
+      AppLogger.log('Skipping App Open ad: returning from another ad.');
+      // Make sure an ad is ready for the next real resume.
+      if (!appOpenAdManager.isAdAvailable) appOpenAdManager.loadAd();
+      return;
     }
+
+    appOpenAdManager.showAdIfAvailable();
   }
 }

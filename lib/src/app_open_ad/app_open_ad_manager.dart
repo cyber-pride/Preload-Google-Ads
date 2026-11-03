@@ -80,7 +80,7 @@ class AppOpenAdManager extends BaseAdLoader {
     }
 
     /// Check if the ad is already being shown, if so, do nothing.
-    if (_isShowingAd) {
+    if (_isShowingAd || FullScreenAdGuard.isShowing) {
       AppLogger.warn('Tried to show ad while already showing an ad.');
       return;
     }
@@ -101,15 +101,20 @@ class AppOpenAdManager extends BaseAdLoader {
     _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
       /// Callback when the ad is successfully shown.
       onAdShowedFullScreenContent: (ad) {
+        FullScreenAdGuard.onShown();
         AppLogger.log('$ad onAdShowedFullScreenContent');
       },
 
+      onAdClicked: (_) => FullScreenAdGuard.onClicked(),
+
       /// Callback when the ad fails to show.
       onAdFailedToShowFullScreenContent: (ad, error) {
+        FullScreenAdGuard.onDismissed();
         AppLogger.error('$ad onAdFailedToShowFullScreenContent: $error');
         ad.dispose();
         _appOpenAd = null;
-        state = AdLoadState.failed;
+        state = AdLoadState.initial;
+        loadAd();
       },
 
       /// Callback when the ad impression is logged.
@@ -119,6 +124,7 @@ class AppOpenAdManager extends BaseAdLoader {
 
       /// Callback when the ad is dismissed.
       onAdDismissedFullScreenContent: (ad) {
+        FullScreenAdGuard.onDismissed();
         AppLogger.log('$ad onAdDismissedFullScreenContent');
         ad.dispose();
         _appOpenAd = null;

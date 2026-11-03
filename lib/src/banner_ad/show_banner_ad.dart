@@ -24,6 +24,8 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
   }
 
   Future<void> _loadStandardBanner() async {
+    // Respect the banner flag and the user's consent choice.
+    if (!shouldShowBannerAd || !AdManager.instance.canRequestAds) return;
     try {
       AdSize? size = config.bannerADLayout?.adSize;
 
@@ -44,12 +46,15 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
         request: const AdRequest(),
         listener: BannerAdListener(
           onAdLoaded: (Ad ad) {
-            if (mounted) {
-              setState(() {
-                banner = ad as BannerAd;
-              });
-            }
             AdStats.instance.bannerLoad.value++;
+            if (!mounted) {
+              // Widget left the screen before the ad arrived: release it.
+              ad.dispose();
+              return;
+            }
+            setState(() {
+              banner = ad as BannerAd;
+            });
           },
           onAdImpression: (ad) => AdStats.instance.bannerImp.value++,
           onAdFailedToLoad: (Ad ad, LoadAdError error) {

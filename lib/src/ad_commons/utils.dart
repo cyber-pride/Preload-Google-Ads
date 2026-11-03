@@ -15,7 +15,9 @@ AdConfigData preData = AdConfigData(
     rewardedInterstitialId: AdTestIds.rewardedInterstitial,
   ),
   adCounter: AdCounter(
-    interstitialCounter: 0,
+    // Show an interstitial on every 3rd trigger by default. Showing one on
+    // every action is disruptive and risks AdMob's interstitial policy.
+    interstitialCounter: 3,
     nativeCounter: 0,
     rewardedCounter: 0,
     rewardedInterstitialCounter: 0,
@@ -47,11 +49,57 @@ AdConfigData preData = AdConfigData(
 ///              **  Set Config Data Function  **
 ///==============================================================================
 
+/// Google's public test ad unit IDs all belong to this publisher ID.
+const String _testPublisherPrefix = 'ca-app-pub-3940256099942544/';
+
+/// Whether [id] is one of Google's sample/test ad unit IDs.
+bool isTestAdUnitId(String? id) =>
+    id != null && id.startsWith(_testPublisherPrefix);
+
+/// Resolves whether a format stays enabled given the ad unit ID the app set.
+///
+/// In release builds a format whose ad unit ID was not provided is disabled
+/// instead of silently falling back to Google's test IDs (which earn nothing).
+bool? _resolveFlag(
+  bool? enabled,
+  String? providedId,
+  String label, {
+  required bool releaseMode,
+}) {
+  if (enabled != true) return enabled;
+  if (providedId == null || providedId.isEmpty) {
+    if (releaseMode) {
+      debugPrint(
+        'PreloadGoogleAds: no $label ad unit ID provided. $label ads are '
+        'disabled in this release build. Set it in AdIDS or turn it off in AdFlag.',
+      );
+      return false;
+    }
+    AppLogger.warn('$label: no ad unit ID provided, using Google test ID (debug only).');
+  } else if (releaseMode && isTestAdUnitId(providedId)) {
+    debugPrint(
+      'PreloadGoogleAds: $label is using a Google TEST ad unit ID in a release '
+      'build. These ads earn no revenue. Replace it with your AdMob ID.',
+    );
+  }
+  return enabled;
+}
+
 /// Sets the configuration data for ads, allowing custom values for each ad type.
 /// Uses default values from [preData] if no configuration is provided.
-Future<AdConfigData> setConfigData(AdConfigData? adConfig) async {
-  await setAdStyleData(adConfig?.nativeADLayout?.customNativeADStyle);
+///
+/// [releaseMode] defaults to [kReleaseMode]; it is a parameter only for tests.
+Future<AdConfigData> setConfigData(
+  AdConfigData? adConfig, {
+  bool releaseMode = kReleaseMode,
+}) async {
+  final ids = adConfig?.adIDs;
+  bool? flag(bool? enabled, String? id, String label) =>
+      _resolveFlag(enabled, id, label, releaseMode: releaseMode);
+
   return AdConfigData(
+    requireConsent: adConfig?.requireConsent ?? false,
+    consentRequestParameters: adConfig?.consentRequestParameters,
     adIDs: AdIDS(
       appOpenId: adConfig?.adIDs?.appOpenId ?? preData.adIDs?.appOpenId,
       bannerId: adConfig?.adIDs?.bannerId ?? preData.adIDs?.bannerId,
@@ -75,15 +123,37 @@ Future<AdConfigData> setConfigData(AdConfigData? adConfig) async {
     ),
     adFlag: AdFlag(
       showAd: adConfig?.adFlag?.showAd ?? preData.adFlag?.showAd,
-      showBanner: adConfig?.adFlag?.showBanner ?? preData.adFlag?.showBanner,
-      showInterstitial: adConfig?.adFlag?.showInterstitial ??
-          preData.adFlag?.showInterstitial,
-      showNative: adConfig?.adFlag?.showNative ?? preData.adFlag?.showNative,
-      showOpenApp: adConfig?.adFlag?.showOpenApp ?? preData.adFlag?.showOpenApp,
-      showRewarded:
-          adConfig?.adFlag?.showRewarded ?? preData.adFlag?.showRewarded,
-      showRewardedInterstitial: adConfig?.adFlag?.showRewardedInterstitial ??
-          preData.adFlag?.showRewardedInterstitial,
+      showBanner: flag(
+        adConfig?.adFlag?.showBanner ?? preData.adFlag?.showBanner,
+        ids?.bannerId,
+        'Banner',
+      ),
+      showInterstitial: flag(
+        adConfig?.adFlag?.showInterstitial ?? preData.adFlag?.showInterstitial,
+        ids?.interstitialId,
+        'Interstitial',
+      ),
+      showNative: flag(
+        adConfig?.adFlag?.showNative ?? preData.adFlag?.showNative,
+        ids?.nativeId,
+        'Native',
+      ),
+      showOpenApp: flag(
+        adConfig?.adFlag?.showOpenApp ?? preData.adFlag?.showOpenApp,
+        ids?.appOpenId,
+        'App Open',
+      ),
+      showRewarded: flag(
+        adConfig?.adFlag?.showRewarded ?? preData.adFlag?.showRewarded,
+        ids?.rewardedId,
+        'Rewarded',
+      ),
+      showRewardedInterstitial: flag(
+        adConfig?.adFlag?.showRewardedInterstitial ??
+            preData.adFlag?.showRewardedInterstitial,
+        ids?.rewardedInterstitialId,
+        'Rewarded Interstitial',
+      ),
     ),
     themeMode: adConfig?.themeMode ?? preData.themeMode,
     nativeADLayout: NativeADLayout(

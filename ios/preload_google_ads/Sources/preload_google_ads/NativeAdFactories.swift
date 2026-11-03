@@ -67,6 +67,8 @@ public class BaseNativeAdFactory: NSObject {
         if let ctaView = adView.callToActionView as? UIButton {
             ctaView.setTitle(nativeAd.callToAction, for: .normal)
             ctaView.isHidden = nativeAd.callToAction == nil
+            // Required by the Google Mobile Ads SDK: the SDK handles CTA taps.
+            ctaView.isUserInteractionEnabled = false
             
             let fgColorHex = styleMap["button_foreground"] as? String
             ctaView.setTitleColor(parseColor(fgColorHex, defaultColor: .white), for: .normal)

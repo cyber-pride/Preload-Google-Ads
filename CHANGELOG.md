@@ -1,3 +1,15 @@
+## v1.0.8
+
+- **Real preloading**: `initialize()` now preloads one ad per enabled format and registers App Open on app resume, so the first show is instant.
+- **Consent (GDPR/UMP)**: new `requireConsent` and `consentRequestParameters` in `AdConfigData`, plus `isPrivacyOptionsRequired()`, `showPrivacyOptionsForm()` and `canRequestAds`. No ad is requested before consent allows it.
+- **Policy-safe defaults**: interstitials now show every 3rd trigger by default (`interstitialCounter: 3`). In release builds, formats without an ad unit ID are disabled instead of serving test ads.
+- **Show rate / match rate**: failed loads retry 3 times (5s, 10s, 20s) and then wait for the next request instead of retrying forever. Native ads expire after 1 hour.
+- **App Open**: never shown over another full-screen ad, right after one closes, or after the user clicks an ad. Reloads after a failed show. Listener registered only once.
+- **New**: `isInterstitialAdReady`, `isRewardedAdReady`, `isRewardedInterstitialAdReady`.
+- **Fixes**: first native ad no longer stays blank; native ads no longer disappear on rebuild; banners loaded after the widget is gone are disposed; banner widgets respect the banner flag; `rewardedInterstitialCounter` now works; cached native ads refresh on light/dark change; style sync errors no longer stop initialization.
+- **iOS**: native CTA taps now register as clicks; no crash when the AppDelegate is not a `FlutterPluginRegistry`.
+- **Android**: native MediaView meets the 120x120dp minimum.
+
 ## v1.0.7
 
 - **Network Interruption & Auto-Recovery**:

@@ -112,6 +112,33 @@ class PreloadGoogleAds {
     return _adManager.showRewardedAd(callBack: callBack, onReward: onReward);
   }
 
+  /// Whether the app must offer a "Privacy settings" entry point.
+  ///
+  /// Only relevant when [AdConfigData.requireConsent] is true. Google requires
+  /// a way for users to change their consent; show a settings button that
+  /// calls [showPrivacyOptionsForm] when this returns true.
+  Future<bool> isPrivacyOptionsRequired() =>
+      _adManager.isPrivacyOptionsRequired();
+
+  /// Shows Google's privacy options form. If the user now allows ads, the SDK
+  /// starts and preloading begins automatically.
+  Future<void> showPrivacyOptionsForm() => _adManager.showPrivacyOptionsForm();
+
+  /// Whether ads may currently be requested (consent obtained or not required).
+  bool get canRequestAds => _adManager.canRequestAds;
+
+  /// Whether an Interstitial ad is loaded and can be shown right now.
+  bool get isInterstitialAdReady => InterAd.instance.isAdLoaded;
+
+  /// Whether a Rewarded ad is loaded and can be shown right now.
+  ///
+  /// Google recommends only offering a "Watch ad for reward" button when this
+  /// is true. Grant rewards only in `onReward`, never in `callBack`.
+  bool get isRewardedAdReady => RewardAd.instance.isAdLoaded;
+
+  /// Whether a Rewarded Interstitial ad is loaded and can be shown right now.
+  bool get isRewardedInterstitialAdReady => RewardInterAd.instance.isAdLoaded;
+
   /// Displays a preloaded Rewarded Interstitial ad.
   ///
   /// [onReward] is invoked when the user earns a reward item.

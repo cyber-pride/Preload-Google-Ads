@@ -2,7 +2,11 @@ import '../ad_internal.dart';
 
 /// A widget that determines which type of native ad (small or medium) to show
 /// based on the `nativeADType` and the counter logic.
-class ShowNative extends StatelessWidget {
+///
+/// The counter decision is made once per placement (when the widget is first
+/// inserted), so ordinary rebuilds (theme changes, parent setState, scrolling)
+/// never make an ad disappear or count as an extra placement.
+class ShowNative extends StatefulWidget {
   /// The type of native ad to display.
   final NativeADType nativeADType;
 
@@ -10,24 +14,33 @@ class ShowNative extends StatelessWidget {
   const ShowNative({super.key, required this.nativeADType});
 
   @override
-  Widget build(BuildContext context) {
-    final isSmall = nativeADType == NativeADType.small;
+  State<ShowNative> createState() => _ShowNativeState();
+}
+
+class _ShowNativeState extends State<ShowNative> {
+  late final bool _showAd;
+
+  @override
+  void initState() {
+    super.initState();
+    final isSmall = widget.nativeADType == NativeADType.small;
     final loader = isSmall ? LoadSmallNative.instance : LoadMediumNative.instance;
 
     if (loader.counter >= getNativeCounter) {
       loader.resetCounter();
-      if (shouldShowNativeAd) {
-        // Show either small or medium native ad based on the `isSmall` flag.
-        return isSmall ? const NativeSmall() : const MediumNative();
-      } else {
-        // If the native ad should not be shown, return an empty space.
-        return const SizedBox.shrink();
-      }
+      _showAd = shouldShowNativeAd;
     } else {
       loader.incrementCounter();
-      // If the counter limit is not reached, return an empty space.
-      return const SizedBox.shrink();
+      _showAd = false;
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_showAd) return const SizedBox.shrink();
+    return widget.nativeADType == NativeADType.small
+        ? const NativeSmall()
+        : const MediumNative();
   }
 }
 
@@ -42,14 +55,24 @@ abstract class _NativeAdViewState<T extends StatefulWidget> extends State<T> {
   @override
   void initState() {
     super.initState();
-    if (loader.ads.isNotEmpty) {
-      _ad = loader.ads.removeAt(0);
+    _ad = loader.takeAd();
+    if (_ad == null) {
+      // No preloaded ad yet: wait for the in-flight load and show it as soon as it arrives.
+      loader.adAvailable.addListener(_onAdAvailable);
     }
-    loader.loadAd();
+  }
+
+  void _onAdAvailable() {
+    if (!mounted || _ad != null) return;
+    final ad = loader.takeAd();
+    if (ad == null) return;
+    loader.adAvailable.removeListener(_onAdAvailable);
+    setState(() => _ad = ad);
   }
 
   @override
   void dispose() {
+    loader.adAvailable.removeListener(_onAdAvailable);
     _ad?.dispose();
     super.dispose();
   }

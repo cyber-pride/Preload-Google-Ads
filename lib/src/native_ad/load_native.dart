@@ -5,6 +5,37 @@ abstract class BaseNativeAdLoader extends BaseAdLoader {
   /// List to store the loaded native ads.
   List<NativeAd> ads = [];
 
+  /// Notifies waiting native ad widgets whenever a new ad enters [ads].
+  final ValueNotifier<int> adAvailable = ValueNotifier(0);
+
+  /// Google recommends discarding native ads that were loaded but not shown
+  /// within one hour.
+  @override
+  Duration get maxCacheDuration => const Duration(hours: 1);
+
+  /// Takes the cached ad for display, or returns null if none is ready.
+  ///
+  /// Expired ads are disposed instead of shown, and a fresh load is started
+  /// so the pool is refilled for the next placement.
+  NativeAd? takeAd() {
+    NativeAd? ad;
+    if (ads.isNotEmpty) {
+      if (isExpired) {
+        AppLogger.warn("$adTypeLabel ad expired. Fetching fresh ad.");
+        for (final old in ads) {
+          old.dispose();
+        }
+        ads.clear();
+      } else {
+        ad = ads.removeAt(0);
+      }
+      loadTime = null;
+      state = AdLoadState.initial;
+    }
+    loadAd();
+    return ad;
+  }
+
   @override
   bool get isEnabled => shouldShowNativeAd;
 
@@ -47,11 +78,12 @@ abstract class BaseNativeAdLoader extends BaseAdLoader {
         nativeTemplateStyle: templateStyle,
         listener: NativeAdListener(
           onAdLoaded: (ad) async {
-            if (nativeAd != null) {
-              ads.add(nativeAd);
-            }
             loadStats.value++;
             handleLoadSuccess();
+            if (nativeAd != null) {
+              ads.add(nativeAd);
+              adAvailable.value++;
+            }
           },
           onAdImpression: (ad) {
             impStats.value++;
