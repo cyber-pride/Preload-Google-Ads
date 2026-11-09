@@ -73,7 +73,11 @@ abstract class _NativeAdViewState<T extends StatefulWidget> extends State<T> {
   @override
   void dispose() {
     loader.adAvailable.removeListener(_onAdAvailable);
-    _ad?.dispose();
+    // An ad that was never seen (e.g. scrolled past quickly) is reused by the
+    // next placement instead of being thrown away.
+    final ad = _ad;
+    _ad = null;
+    if (ad != null) loader.recycle(ad);
     super.dispose();
   }
 

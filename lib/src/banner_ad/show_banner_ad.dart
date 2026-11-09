@@ -16,11 +16,8 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
   @override
   void initState() {
     super.initState();
-    if (LoadBannerAd.instance.bannerAdObject.isNotEmpty) {
-      banner = LoadBannerAd.instance.bannerAdObject.removeAt(0);
-    } else {
-      _loadStandardBanner();
-    }
+    banner = LoadBannerAd.instance.takeBanner();
+    if (banner == null) _loadStandardBanner();
   }
 
   Future<void> _loadStandardBanner() async {

@@ -18,6 +18,9 @@ class AppOpenAdManager extends BaseAdLoader {
   String get adLabel => "App Open";
 
   @override
+  bool get isAutoPreload => autoPreloadOpenAppAd;
+
+  @override
   void load() {
     loadAd();
   }
@@ -69,30 +72,30 @@ class AppOpenAdManager extends BaseAdLoader {
   ///
   /// If the previously cached ad has expired, this just loads and caches a
   /// new ad.
-  void showAdIfAvailable() {
-    if (!isEnabled) return;
+  ///
+  /// Returns true if an ad is being presented.
+  bool showAdIfAvailable() {
+    if (!isEnabled) return false;
 
     /// Check if an ad is available, if not, load a new one.
     if (!isAdAvailable) {
       AppLogger.log('Tried to show ad before available.');
-      loadAd();
-      return;
+      if (isAutoPreload) loadAd();
+      return false;
     }
 
     /// Check if the ad is already being shown, if so, do nothing.
     if (_isShowingAd || FullScreenAdGuard.isShowing) {
       AppLogger.warn('Tried to show ad while already showing an ad.');
-      return;
+      return false;
     }
 
     /// Check if the cached ad has expired based on the max cache duration.
     if (isExpired) {
       AppLogger.warn('Maximum cache duration exceeded. Loading another ad.');
-      _appOpenAd!.dispose();
-      _appOpenAd = null;
-      loadTime = null;
-      loadAd();
-      return;
+      discardAd();
+      if (isAutoPreload) loadAd();
+      return false;
     }
 
     state = AdLoadState.showing;
@@ -114,7 +117,7 @@ class AppOpenAdManager extends BaseAdLoader {
         ad.dispose();
         _appOpenAd = null;
         state = AdLoadState.initial;
-        loadAd();
+        if (isAutoPreload) loadAd();
       },
 
       /// Callback when the ad impression is logged.
@@ -129,12 +132,21 @@ class AppOpenAdManager extends BaseAdLoader {
         ad.dispose();
         _appOpenAd = null;
         state = AdLoadState.initial;
-        loadAd();
+        if (isAutoPreload) loadAd();
       },
     );
 
     /// Show the app open ad.
     _appOpenAd!.show();
+    return true;
+  }
+
+  @override
+  void discardAd() {
+    if (isShowing) return;
+    _appOpenAd?.dispose();
+    _appOpenAd = null;
+    super.discardAd();
   }
 
   @override

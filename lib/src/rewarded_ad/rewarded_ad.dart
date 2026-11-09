@@ -19,6 +19,9 @@ class RewardAd extends BaseAdLoader {
   @override
   String get adLabel => "Rewarded";
 
+  @override
+  bool get isAutoPreload => autoPreloadRewardedAd;
+
   RewardedAd? _rewardedAd; // Stores the loaded rewarded ad.
 
   /// Loads a rewarded ad with the given unit ID and configuration.
@@ -48,33 +51,34 @@ class RewardAd extends BaseAdLoader {
       );
     } catch (error) {
       state = AdLoadState.failed;
-      _rewardedAd?.dispose(); // Dispose ad if there's an error.
+      _rewardedAd?.dispose();
+      _rewardedAd = null;
       handleFailureAndRetry(error);
     }
   }
 
   /// Shows the rewarded ad if it is loaded and the conditions are met.
-  void showRewarded({
+  ///
+  /// Returns true if an ad is being presented; false if [callBack] was
+  /// already called because no ad was shown.
+  bool showRewarded({
     required Function({RewardedAd? ad, AdError? error}) callBack,
     required Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {
     incrementCounter();
     if (counter < getRewardedCounter) {
       callBack();
-      return;
+      return false;
     }
 
     if (shouldShowRewardedAd && _rewardedAd != null && isAdLoaded) {
       // Check if ad expired (AdMob 4-hour TTL rule)
       if (isExpired) {
         AppLogger.warn('Rewarded ad expired. Fetching fresh ad.');
-        _rewardedAd?.dispose();
-        _rewardedAd = null;
-        loadTime = null;
-        state = AdLoadState.initial;
-        load();
+        discardAd();
+        if (isAutoPreload) load();
         callBack();
-        return;
+        return false;
       }
 
       resetCounter(); // Reset the counter after showing the ad.
@@ -90,7 +94,7 @@ class RewardAd extends BaseAdLoader {
           ad.dispose();
           _rewardedAd = null;
           state = AdLoadState.initial;
-          load(); // Reload ad after dismissal.
+          if (isAutoPreload) load(); // Reload ad after dismissal.
         },
         // Called when the ad is shown (impression).
         onAdImpression: (ad) {
@@ -104,7 +108,7 @@ class RewardAd extends BaseAdLoader {
           _rewardedAd = null;
           ad.dispose();
           state = AdLoadState.failed;
-          load(); // Reload ad after failure.
+          if (isAutoPreload) load(); // Reload ad after failure.
         },
       );
 
@@ -115,11 +119,21 @@ class RewardAd extends BaseAdLoader {
         },
       );
     } else {
-      if (!isAdLoaded && state != AdLoadState.loading) {
+      if (isAutoPreload && !isAdLoaded && state != AdLoadState.loading) {
         load();
       }
       callBack(); // Callback if ads shouldn't be shown or limit not reached.
+      return false;
     }
+    return true;
+  }
+
+  @override
+  void discardAd() {
+    if (isShowing) return;
+    _rewardedAd?.dispose();
+    _rewardedAd = null;
+    super.discardAd();
   }
 
   /// Resets the ad state and disposes of loaded ads.

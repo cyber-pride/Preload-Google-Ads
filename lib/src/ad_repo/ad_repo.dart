@@ -37,14 +37,14 @@ abstract class AdRepo {
   Future<void> loadAppOpenAd();
 
   /// Displays the app open ad.
-  void showOpenAppAd();
+  bool showOpenAppAd();
 
   /// Loads the interstitial ad.
   void loadInterAd();
 
   /// Displays the interstitial ad.
   /// A callback function is passed to handle success or failure of the ad.
-  void showInterAd({
+  bool showInterAd({
     required Function({InterstitialAd? ad, AdError? error}) callBack,
   });
 
@@ -53,7 +53,7 @@ abstract class AdRepo {
 
   /// Displays the rewarded ad.
   /// Callback functions are passed to handle the ad state (success or failure) and reward information.
-  void showRewardedAd({
+  bool showRewardedAd({
     required Function({RewardedAd? ad, AdError? error}) callBack,
     required Function(AdWithoutView ad, RewardItem reward) onReward,
   });
@@ -63,7 +63,7 @@ abstract class AdRepo {
 
   /// Displays the rewarded interstitial ad.
   /// Callback functions are passed to handle the ad state (success or failure) and reward information.
-  void showRewardedInterAd({
+  bool showRewardedInterAd({
     required Function({RewardedInterstitialAd? ad, AdError? error}) callBack,
     required Function(AdWithoutView ad, RewardItem reward) onReward,
   });

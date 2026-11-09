@@ -18,10 +18,12 @@ class LifeCycleManager {
 
   AppLifecycleReactor? _appLifecycleReactor;
 
-  /// Preloads an App Open ad and starts listening for the app returning to the
-  /// foreground. Safe to call more than once: the listener is registered only once.
+  /// Preloads an App Open ad (in [PreloadMode.auto]) and starts listening for
+  /// the app returning to the foreground. Safe to call more than once: the
+  /// listener is registered only once. In [PreloadMode.manual] only the
+  /// listener is registered; it shows an ad loaded with `preloadAppOpenAd()`.
   Future<void> getOpenAppAdvertise() async {
-    appOpenAdManager.loadAd();
+    if (appOpenAdManager.isAutoPreload) appOpenAdManager.loadAd();
 
     if (_appLifecycleReactor != null) return;
     _appLifecycleReactor = AppLifecycleReactor(
@@ -64,7 +66,9 @@ class AppLifecycleReactor {
     if (!FullScreenAdGuard.canShowAppOpen()) {
       AppLogger.log('Skipping App Open ad: returning from another ad.');
       // Make sure an ad is ready for the next real resume.
-      if (!appOpenAdManager.isAdAvailable) appOpenAdManager.loadAd();
+      if (appOpenAdManager.isAutoPreload && !appOpenAdManager.isAdAvailable) {
+        appOpenAdManager.loadAd();
+      }
       return;
     }
 

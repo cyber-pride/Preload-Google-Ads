@@ -51,7 +51,7 @@ class AdRepoImpl extends AdRepo {
 
   /// Displays the Interstitial ad by calling the showInter method of InterAd
   @override
-  void showInterAd({
+  bool showInterAd({
     required Function({InterstitialAd? ad, AdError? error}) callBack,
   }) {
     return InterAd.instance.showInter(callBack: callBack);
@@ -65,7 +65,7 @@ class AdRepoImpl extends AdRepo {
 
   /// Displays the app open ad using AppOpenAdManager instance if available
   @override
-  void showOpenAppAd() {
+  bool showOpenAppAd() {
     return AppOpenAdManager.instance.showAdIfAvailable();
   }
 
@@ -83,7 +83,7 @@ class AdRepoImpl extends AdRepo {
 
   /// Displays the rewarded ad using RewardAd instance
   @override
-  void showRewardedAd({
+  bool showRewardedAd({
     required Function({RewardedAd? ad, AdError? error}) callBack,
     required Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {
@@ -101,7 +101,7 @@ class AdRepoImpl extends AdRepo {
 
   /// Displays the rewarded interstitial ad using RewardInterAd instance
   @override
-  void showRewardedInterAd({
+  bool showRewardedInterAd({
     required Function({RewardedInterstitialAd? ad, AdError? error}) callBack,
     required Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {

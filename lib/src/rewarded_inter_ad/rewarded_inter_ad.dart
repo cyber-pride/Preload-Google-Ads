@@ -17,6 +17,9 @@ class RewardInterAd extends BaseAdLoader {
   @override
   String get adLabel => "Rewarded Interstitial";
 
+  @override
+  bool get isAutoPreload => autoPreloadRewardedInterAd;
+
   /// Stores the loaded rewarded interstitial ad.
   RewardedInterstitialAd? _rewardedInterstitialAd;
 
@@ -46,32 +49,33 @@ class RewardInterAd extends BaseAdLoader {
     } catch (error) {
       state = AdLoadState.failed;
       _rewardedInterstitialAd?.dispose();
+      _rewardedInterstitialAd = null;
       handleFailureAndRetry(error);
     }
   }
 
   /// Shows the rewarded interstitial ad if loaded.
-  void showRewardedInter({
+  ///
+  /// Returns true if an ad is being presented; false if [callBack] was
+  /// already called because no ad was shown.
+  bool showRewardedInter({
     required Function({RewardedInterstitialAd? ad, AdError? error}) callBack,
     required Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {
     incrementCounter();
     if (counter < getRewardedInterCounter) {
       callBack();
-      return;
+      return false;
     }
 
     if (shouldShowRewardedInterAd && _rewardedInterstitialAd != null && isAdLoaded) {
       // Check if ad expired (AdMob 4-hour TTL rule)
       if (isExpired) {
         AppLogger.warn('Rewarded Interstitial ad expired. Fetching fresh ad.');
-        _rewardedInterstitialAd?.dispose();
-        _rewardedInterstitialAd = null;
-        loadTime = null;
-        state = AdLoadState.initial;
-        load();
+        discardAd();
+        if (isAutoPreload) load();
         callBack();
-        return;
+        return false;
       }
 
       resetCounter();
@@ -87,7 +91,7 @@ class RewardInterAd extends BaseAdLoader {
           ad.dispose();
           _rewardedInterstitialAd = null;
           state = AdLoadState.initial;
-          load();
+          if (isAutoPreload) load();
         },
         onAdImpression: (ad) {
           AdStats.instance.rewardedInterImp.value++;
@@ -99,7 +103,7 @@ class RewardInterAd extends BaseAdLoader {
           _rewardedInterstitialAd = null;
           ad.dispose();
           state = AdLoadState.failed;
-          load();
+          if (isAutoPreload) load();
         },
       );
 
@@ -109,11 +113,21 @@ class RewardInterAd extends BaseAdLoader {
         },
       );
     } else {
-      if (!isAdLoaded && state != AdLoadState.loading) {
+      if (isAutoPreload && !isAdLoaded && state != AdLoadState.loading) {
         load(); // Recovery load if missing or network restored
       }
       callBack();
+      return false;
     }
+    return true;
+  }
+
+  @override
+  void discardAd() {
+    if (isShowing) return;
+    _rewardedInterstitialAd?.dispose();
+    _rewardedInterstitialAd = null;
+    super.discardAd();
   }
 
   /// Resets the ad state and disposes loaded ads.

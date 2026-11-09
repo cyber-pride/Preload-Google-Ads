@@ -28,9 +28,8 @@ public class PreloadGoogleAdsPlugin: NSObject, FlutterPlugin {
     switch call.method {
     case "setAdStyle":
       if let arguments = call.arguments as? [String: Any] {
-        // In a real iOS implementation, we would store this style
-        // and use it when creating the native ad views.
-        // For now, we'll just acknowledge receipt.
+        // Each native ad factory observes this notification and uses the new
+        // style for every ad view it creates from now on.
         NotificationCenter.default.post(name: NSNotification.Name("PreloadGoogleAds_UpdateStyle"), object: nil, userInfo: arguments)
         result(nil)
       } else {

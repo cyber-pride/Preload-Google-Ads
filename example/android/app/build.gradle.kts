@@ -14,10 +14,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-
     defaultConfig {
         applicationId = "com.plug.preload.example"
         minSdk = flutter.minSdkVersion
@@ -42,6 +38,12 @@ android {
         checkReleaseBuilds = false
         abortOnError = false
         disable.add("NullSafeMutableLiveData")
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }
 }
 

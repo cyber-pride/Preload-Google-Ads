@@ -12,6 +12,85 @@ enum AdThemeMode {
   dark,
 }
 
+/// How an ad format is preloaded.
+enum PreloadMode {
+  /// The package loads the ad by itself: at startup, after each show, when a
+  /// show call finds nothing ready, and after [AdManager.reloadUnloadedAds].
+  /// This is the default and matches the behavior of earlier versions.
+  auto,
+
+  /// The package never requests the ad on its own. Call the matching
+  /// `PreloadGoogleAds.instance.preload…()` function when the user is about to
+  /// reach the screen that shows it, so ads are only requested when they are
+  /// likely to be seen (better show rate).
+  ///
+  /// Native and banner widgets still load their own ad when they appear with
+  /// nothing preloaded, because that ad is about to be seen.
+  manual,
+}
+
+/// Chooses [PreloadMode.auto] or [PreloadMode.manual] per ad format.
+///
+/// Formats left null keep their current mode (on the first `initialize()`
+/// call: [PreloadMode.auto]).
+///
+/// ```dart
+/// AdConfigData(
+///   preloadConfig: AdPreloadConfig(
+///     rewarded: PreloadMode.manual,
+///     rewardedInterstitial: PreloadMode.manual,
+///   ),
+/// )
+/// ```
+class AdPreloadConfig {
+  /// Preload mode for interstitial ads.
+  final PreloadMode? interstitial;
+
+  /// Preload mode for rewarded ads.
+  final PreloadMode? rewarded;
+
+  /// Preload mode for rewarded interstitial ads.
+  final PreloadMode? rewardedInterstitial;
+
+  /// Preload mode for native ads (small and medium).
+  final PreloadMode? native;
+
+  /// Preload mode for standard banner ads.
+  final PreloadMode? banner;
+
+  /// Preload mode for app open ads.
+  final PreloadMode? appOpen;
+
+  /// Sets the mode per format; null keeps the current mode.
+  const AdPreloadConfig({
+    this.interstitial,
+    this.rewarded,
+    this.rewardedInterstitial,
+    this.native,
+    this.banner,
+    this.appOpen,
+  });
+
+  /// Uses the same [mode] for every format.
+  const AdPreloadConfig.all(PreloadMode mode)
+      : interstitial = mode,
+        rewarded = mode,
+        rewardedInterstitial = mode,
+        native = mode,
+        banner = mode,
+        appOpen = mode;
+
+  /// Returns this config with null formats taken from [base].
+  AdPreloadConfig mergeOnto(AdPreloadConfig? base) => AdPreloadConfig(
+        interstitial: interstitial ?? base?.interstitial,
+        rewarded: rewarded ?? base?.rewarded,
+        rewardedInterstitial: rewardedInterstitial ?? base?.rewardedInterstitial,
+        native: native ?? base?.native,
+        banner: banner ?? base?.banner,
+        appOpen: appOpen ?? base?.appOpen,
+      );
+}
+
 /// Configuration data for all ad-related settings.
 class AdConfigData {
   /// IDs for various ad formats.
@@ -32,12 +111,25 @@ class AdConfigData {
   /// Theme mode for ad styling (system, light, or dark).
   final AdThemeMode themeMode;
 
+  /// Automatic or manual preloading per ad format. Null means every format
+  /// is preloaded automatically.
+  final AdPreloadConfig? preloadConfig;
+
+  /// Whether [themeMode] was passed explicitly (rather than defaulted).
+  ///
+  /// When `initialize()` is called again, an omitted theme mode keeps the
+  /// current one instead of resetting it to [AdThemeMode.system].
+  final bool themeModeProvided;
+
   /// When true, `initialize()` runs Google's User Messaging Platform (UMP)
   /// consent flow before the Mobile Ads SDK starts, and no ad is requested
   /// until `ConsentInformation.canRequestAds()` is true.
   ///
   /// Required by Google for apps with users in the EEA, UK and Switzerland.
   /// Create a GDPR message in AdMob → Privacy & messaging first.
+  ///
+  /// Once enabled it stays enabled for the rest of the app session: calling
+  /// `initialize()` again without it does not switch consent off.
   final bool requireConsent;
 
   /// Optional UMP request parameters (e.g. debug geography for testing,
@@ -51,13 +143,19 @@ class AdConfigData {
     this.adFlag,
     this.nativeADLayout,
     this.bannerADLayout,
-    this.themeMode = AdThemeMode.system,
+    AdThemeMode? themeMode,
     this.requireConsent = false,
     this.consentRequestParameters,
-  });
+    this.preloadConfig,
+  })  : themeMode = themeMode ?? AdThemeMode.system,
+        themeModeProvided = themeMode != null;
 
   /// Returns a copy with the given fields replaced.
-  AdConfigData copyWith({AdThemeMode? themeMode, AdFlag? adFlag}) {
+  AdConfigData copyWith({
+    AdThemeMode? themeMode,
+    AdFlag? adFlag,
+    AdPreloadConfig? preloadConfig,
+  }) {
     return AdConfigData(
       adIDs: adIDs,
       adCounter: adCounter,
@@ -67,6 +165,7 @@ class AdConfigData {
       themeMode: themeMode ?? this.themeMode,
       requireConsent: requireConsent,
       consentRequestParameters: consentRequestParameters,
+      preloadConfig: preloadConfig ?? this.preloadConfig,
     );
   }
 }

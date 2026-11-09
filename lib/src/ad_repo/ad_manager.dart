@@ -26,14 +26,32 @@ class AdManager {
 
   bool _sdkStarted = false;
 
+  /// Whether the Mobile Ads SDK has been started (after `initialize()` and,
+  /// if required, consent). Ads can only be requested after this.
+  bool get isSdkStarted => _sdkStarted;
+
+  /// Lets tests simulate a started SDK without the platform plugin.
+  @visibleForTesting
+  set debugSdkStarted(bool value) => _sdkStarted = value;
+
+  bool _initialized = false;
+
   /// Initializes the AdManager with the provided ad configuration.
   ///
   /// Flow (Google recommended):
   /// 1. If [AdConfigData.requireConsent] is set, gather UMP consent first.
   /// 2. Start the Mobile Ads SDK once ads may be requested.
   /// 3. Preload one ad per enabled format and register the App Open listener.
+  ///
+  /// Calling it again updates the current config: anything [adConfig] leaves
+  /// out keeps its current value, consent stays required once it was, and
+  /// cached ads whose ad unit ID, flag or style changed are replaced.
   Future<void> initialize(AdConfigData? adConfig) async {
-    config = await setConfigData(adConfig);
+    final previous = _initialized ? config : null;
+    _reloadAfterInit.clear();
+    config = await setConfigData(adConfig, base: previous);
+    _initialized = true;
+    if (previous != null) _discardOutdatedAds(previous, adConfig);
 
     // Sync initial native channel ad style based on configured mode
     await _syncNativeAdStyle();
@@ -54,6 +72,11 @@ class AdManager {
       return;
     }
     await _startSdkAndPreload();
+
+    for (final loader in _reloadAfterInit) {
+      loader.load();
+    }
+    _reloadAfterInit.clear();
   }
 
   /// Starts the SDK and preloads ads exactly once.
@@ -162,14 +185,60 @@ class AdManager {
     final isDark = NativeADStyle.instance.isDarkMode(context: context);
     await _syncNativeAdStyle(context: context);
 
-    if (wasDark != isDark && !isFlutterLayout) {
-      for (final loader in [LoadMediumNative.instance, LoadSmallNative.instance]) {
-        if (loader.ads.isNotEmpty) {
-          loader.reset();
-          loader.loadAd();
-        }
+    // Both native layouts (platform factories and Flutter templates) apply
+    // their style when the ad loads, so cached ads must be replaced.
+    if (wasDark != isDark) _refreshNativeAds(reload: true);
+  }
+
+  /// Replaces cached (and in-flight) native ads so the next ones use the
+  /// current style.
+  void _refreshNativeAds({required bool reload}) {
+    for (final loader in [LoadMediumNative.instance, LoadSmallNative.instance]) {
+      if (loader.ads.isEmpty && !loader.isLoading) continue;
+      loader.reset();
+      if (reload) {
+        loader.loadAd();
+      } else if (!loader.isAutoPreload) {
+        _reloadAfterInit.add(loader);
       }
     }
+  }
+
+  /// After a repeat [initialize], drops cached ads that no longer match the
+  /// config. Auto formats are reloaded by [reloadUnloadedAds]; manual formats
+  /// that had an ad are requested again too (see [_reloadAfterInit]).
+  void _discardOutdatedAds(AdConfigData before, AdConfigData? update) {
+    final now = config;
+    bool changed(String? a, String? b, bool? fa, bool? fb) => a != b || fa != fb;
+    final idsA = before.adIDs, idsB = now.adIDs;
+    final flagA = before.adFlag, flagB = now.adFlag;
+    final allOff = flagA?.showAd != flagB?.showAd;
+
+    void discard(BaseAdLoader loader, bool outdated) {
+      // Never dispose an ad that is on screen right now.
+      if (!(outdated || allOff) || loader.isShowing) return;
+      final hadAd = loader.hasReadyAd || loader.isLoading;
+      loader.reset();
+      if (hadAd && !loader.isAutoPreload) _reloadAfterInit.add(loader);
+    }
+
+    discard(InterAd.instance, changed(idsA?.interstitialId, idsB?.interstitialId,
+        flagA?.showInterstitial, flagB?.showInterstitial));
+    discard(RewardAd.instance, changed(idsA?.rewardedId, idsB?.rewardedId,
+        flagA?.showRewarded, flagB?.showRewarded));
+    discard(RewardInterAd.instance, changed(idsA?.rewardedInterstitialId,
+        idsB?.rewardedInterstitialId, flagA?.showRewardedInterstitial,
+        flagB?.showRewardedInterstitial));
+    discard(AppOpenAdManager.instance, changed(idsA?.appOpenId, idsB?.appOpenId,
+        flagA?.showOpenApp, flagB?.showOpenApp));
+    discard(LoadBannerAd.instance, changed(idsA?.bannerId, idsB?.bannerId,
+        flagA?.showBanner, flagB?.showBanner));
+
+    final nativeOutdated = allOff ||
+        changed(idsA?.nativeId, idsB?.nativeId, flagA?.showNative, flagB?.showNative) ||
+        update?.nativeADLayout != null ||
+        before.themeMode != now.themeMode;
+    if (nativeOutdated) _refreshNativeAds(reload: false);
   }
 
   /// Syncs native Kotlin/Swift ad styling via MethodChannel.
@@ -202,36 +271,58 @@ class AdManager {
     }
   }
 
-  /// Triggers background reloading of any ad format that failed or was lost due to network issues.
-  void reloadUnloadedAds() {
-    if (!shouldShowAd || !canRequestAds) return;
+  /// Every format loader, in the order ads are preloaded at startup.
+  List<BaseAdLoader> get _loaders => [
+        RewardAd.instance,
+        RewardInterAd.instance,
+        InterAd.instance,
+        LoadBannerAd.instance,
+        LoadMediumNative.instance,
+        LoadSmallNative.instance,
+        AppOpenAdManager.instance,
+      ];
 
-    if (shouldShowRewardedAd && !RewardAd.instance.isAdLoaded) {
-      RewardAd.instance.load();
-    }
-    if (shouldShowRewardedInterAd && !RewardInterAd.instance.isAdLoaded) {
-      RewardInterAd.instance.load();
-    }
-    if (shouldShowInterAd && !InterAd.instance.isAdLoaded) {
-      InterAd.instance.load();
-    }
-    if (shouldShowBannerAd && LoadBannerAd.instance.bannerAdObject.isEmpty) {
-      LoadBannerAd.instance.loadAd();
-    }
-    if (shouldShowNativeAd) {
-      if (LoadMediumNative.instance.ads.isEmpty) {
-        LoadMediumNative.instance.loadAd();
+  /// Triggers background reloading of any ad format that failed or was lost
+  /// due to network issues.
+  ///
+  /// Only formats in [PreloadMode.auto] are reloaded; manual formats load
+  /// only through their `preload…()` function.
+  void reloadUnloadedAds() {
+    if (!shouldShowAd || !canRequestAds || !_sdkStarted) return;
+    for (final loader in _loaders) {
+      if (loader.isAutoPreload && loader.isEnabled && !loader.hasReadyAd) {
+        loader.load();
       }
-      if (LoadSmallNative.instance.ads.isEmpty) {
-        LoadSmallNative.instance.loadAd();
-      }
-    }
-    if (shouldShowOpenAppAd && !AppOpenAdManager.instance.isAdAvailable) {
-      AppOpenAdManager.instance.loadAd();
     }
   }
 
+  /// Manual-mode loaders whose ready ad was discarded by a repeat
+  /// [initialize]; they are requested again once ads may be loaded, so a
+  /// config update never silently drops an ad the app asked for.
+  final Set<BaseAdLoader> _reloadAfterInit = {};
 
+  /// Preloads an interstitial ad. See [BaseAdLoader.preload].
+  Future<bool> preloadInterstitialAd() => InterAd.instance.preload();
+
+  /// Preloads a rewarded ad. See [BaseAdLoader.preload].
+  Future<bool> preloadRewardedAd() => RewardAd.instance.preload();
+
+  /// Preloads a rewarded interstitial ad. See [BaseAdLoader.preload].
+  Future<bool> preloadRewardedInterstitialAd() =>
+      RewardInterAd.instance.preload();
+
+  /// Preloads an app open ad. See [BaseAdLoader.preload].
+  Future<bool> preloadAppOpenAd() => AppOpenAdManager.instance.preload();
+
+  /// Preloads a standard banner ad. See [BaseAdLoader.preload].
+  Future<bool> preloadBannerAd() => LoadBannerAd.instance.preload();
+
+  /// Preloads a native ad of [nativeADType]. See [BaseAdLoader.preload].
+  Future<bool> preloadNativeAd({NativeADType nativeADType = NativeADType.medium}) =>
+      (nativeADType == NativeADType.small
+              ? LoadSmallNative.instance
+              : LoadMediumNative.instance)
+          .preload();
 
   /// Below methods are used to show various types of ads
 
@@ -241,7 +332,7 @@ class AdManager {
   }
 
   /// Shows the open app ad.
-  void showOpenApp() {
+  bool showOpenApp() {
     return PlugAd.getInstance().showOpenAppAd();
   }
 
@@ -261,7 +352,7 @@ class AdManager {
   }
 
   /// Shows the interstitial ad and invokes the provided callback with the ad or error.
-  void showInterstitialAd({
+  bool showInterstitialAd({
     required Function(InterstitialAd? ad, AdError? error) callBack,
   }) {
     return PlugAd.getInstance().showInterAd(
@@ -272,7 +363,7 @@ class AdManager {
   }
 
   /// Shows the rewarded ad and invokes the provided callbacks with the ad, error, and reward information.
-  void showRewardedAd({
+  bool showRewardedAd({
     required void Function(RewardedAd? ad, AdError? error) callBack,
     required void Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {
@@ -285,7 +376,7 @@ class AdManager {
   }
 
   /// Shows the rewarded interstitial ad and invokes the provided callbacks with the ad, error, and reward information.
-  void showRewardedInterstitialAd({
+  bool showRewardedInterstitialAd({
     required void Function(RewardedInterstitialAd? ad, AdError? error) callBack,
     required void Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {

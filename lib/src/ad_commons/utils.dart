@@ -86,104 +86,126 @@ bool? _resolveFlag(
 }
 
 /// Sets the configuration data for ads, allowing custom values for each ad type.
-/// Uses default values from [preData] if no configuration is provided.
+///
+/// Values missing from [adConfig] come from [base] (the current config when
+/// `initialize()` is called again) or, on the first call, from [preData].
+/// Consent stays required once [base] required it.
 ///
 /// [releaseMode] defaults to [kReleaseMode]; it is a parameter only for tests.
 Future<AdConfigData> setConfigData(
   AdConfigData? adConfig, {
   bool releaseMode = kReleaseMode,
+  AdConfigData? base,
 }) async {
-  final ids = adConfig?.adIDs;
+  final fallback = base ?? preData;
+  final given = adConfig?.adIDs;
+  final kept = base?.adIDs;
+  // IDs the app actually set: in this call, or in an earlier initialize().
+  final ids = AdIDS(
+    appOpenId: given?.appOpenId ?? kept?.appOpenId,
+    bannerId: given?.bannerId ?? kept?.bannerId,
+    nativeId: given?.nativeId ?? kept?.nativeId,
+    interstitialId: given?.interstitialId ?? kept?.interstitialId,
+    rewardedId: given?.rewardedId ?? kept?.rewardedId,
+    rewardedInterstitialId:
+        given?.rewardedInterstitialId ?? kept?.rewardedInterstitialId,
+  );
   bool? flag(bool? enabled, String? id, String label) =>
       _resolveFlag(enabled, id, label, releaseMode: releaseMode);
 
   return AdConfigData(
-    requireConsent: adConfig?.requireConsent ?? false,
-    consentRequestParameters: adConfig?.consentRequestParameters,
+    requireConsent:
+        (adConfig?.requireConsent ?? false) || (base?.requireConsent ?? false),
+    consentRequestParameters:
+        adConfig?.consentRequestParameters ?? base?.consentRequestParameters,
+    preloadConfig: adConfig?.preloadConfig?.mergeOnto(base?.preloadConfig) ??
+        base?.preloadConfig,
     adIDs: AdIDS(
-      appOpenId: adConfig?.adIDs?.appOpenId ?? preData.adIDs?.appOpenId,
-      bannerId: adConfig?.adIDs?.bannerId ?? preData.adIDs?.bannerId,
-      nativeId: adConfig?.adIDs?.nativeId ?? preData.adIDs?.nativeId,
+      appOpenId: adConfig?.adIDs?.appOpenId ?? fallback.adIDs?.appOpenId,
+      bannerId: adConfig?.adIDs?.bannerId ?? fallback.adIDs?.bannerId,
+      nativeId: adConfig?.adIDs?.nativeId ?? fallback.adIDs?.nativeId,
       interstitialId:
-          adConfig?.adIDs?.interstitialId ?? preData.adIDs?.interstitialId,
-      rewardedId: adConfig?.adIDs?.rewardedId ?? preData.adIDs?.rewardedId,
+          adConfig?.adIDs?.interstitialId ?? fallback.adIDs?.interstitialId,
+      rewardedId: adConfig?.adIDs?.rewardedId ?? fallback.adIDs?.rewardedId,
       rewardedInterstitialId: adConfig?.adIDs?.rewardedInterstitialId ??
-          preData.adIDs?.rewardedInterstitialId,
+          fallback.adIDs?.rewardedInterstitialId,
     ),
     adCounter: AdCounter(
       interstitialCounter: adConfig?.adCounter?.interstitialCounter ??
-          preData.adCounter?.interstitialCounter,
+          fallback.adCounter?.interstitialCounter,
       nativeCounter: adConfig?.adCounter?.nativeCounter ??
-          preData.adCounter?.nativeCounter,
+          fallback.adCounter?.nativeCounter,
       rewardedCounter: adConfig?.adCounter?.rewardedCounter ??
-          preData.adCounter?.rewardedCounter,
+          fallback.adCounter?.rewardedCounter,
       rewardedInterstitialCounter:
           adConfig?.adCounter?.rewardedInterstitialCounter ??
-              preData.adCounter?.rewardedInterstitialCounter,
+              fallback.adCounter?.rewardedInterstitialCounter,
     ),
     adFlag: AdFlag(
-      showAd: adConfig?.adFlag?.showAd ?? preData.adFlag?.showAd,
+      showAd: adConfig?.adFlag?.showAd ?? fallback.adFlag?.showAd,
       showBanner: flag(
-        adConfig?.adFlag?.showBanner ?? preData.adFlag?.showBanner,
-        ids?.bannerId,
+        adConfig?.adFlag?.showBanner ?? fallback.adFlag?.showBanner,
+        ids.bannerId,
         'Banner',
       ),
       showInterstitial: flag(
-        adConfig?.adFlag?.showInterstitial ?? preData.adFlag?.showInterstitial,
-        ids?.interstitialId,
+        adConfig?.adFlag?.showInterstitial ?? fallback.adFlag?.showInterstitial,
+        ids.interstitialId,
         'Interstitial',
       ),
       showNative: flag(
-        adConfig?.adFlag?.showNative ?? preData.adFlag?.showNative,
-        ids?.nativeId,
+        adConfig?.adFlag?.showNative ?? fallback.adFlag?.showNative,
+        ids.nativeId,
         'Native',
       ),
       showOpenApp: flag(
-        adConfig?.adFlag?.showOpenApp ?? preData.adFlag?.showOpenApp,
-        ids?.appOpenId,
+        adConfig?.adFlag?.showOpenApp ?? fallback.adFlag?.showOpenApp,
+        ids.appOpenId,
         'App Open',
       ),
       showRewarded: flag(
-        adConfig?.adFlag?.showRewarded ?? preData.adFlag?.showRewarded,
-        ids?.rewardedId,
+        adConfig?.adFlag?.showRewarded ?? fallback.adFlag?.showRewarded,
+        ids.rewardedId,
         'Rewarded',
       ),
       showRewardedInterstitial: flag(
         adConfig?.adFlag?.showRewardedInterstitial ??
-            preData.adFlag?.showRewardedInterstitial,
-        ids?.rewardedInterstitialId,
+            fallback.adFlag?.showRewardedInterstitial,
+        ids.rewardedInterstitialId,
         'Rewarded Interstitial',
       ),
     ),
-    themeMode: adConfig?.themeMode ?? preData.themeMode,
+    themeMode: (adConfig?.themeModeProvided ?? false)
+        ? adConfig!.themeMode
+        : fallback.themeMode,
     nativeADLayout: NativeADLayout(
       lightDecoration: adConfig?.nativeADLayout?.lightDecoration ??
-          preData.nativeADLayout?.lightDecoration,
+          fallback.nativeADLayout?.lightDecoration,
       darkDecoration: adConfig?.nativeADLayout?.darkDecoration ??
-          preData.nativeADLayout?.darkDecoration,
+          fallback.nativeADLayout?.darkDecoration,
       margin:
-          adConfig?.nativeADLayout?.margin ?? preData.nativeADLayout?.margin,
+          adConfig?.nativeADLayout?.margin ?? fallback.nativeADLayout?.margin,
       padding:
-          adConfig?.nativeADLayout?.padding ?? preData.nativeADLayout?.padding,
+          adConfig?.nativeADLayout?.padding ?? fallback.nativeADLayout?.padding,
       adLayout: adConfig?.nativeADLayout?.adLayout ??
-          preData.nativeADLayout?.adLayout,
+          fallback.nativeADLayout?.adLayout,
       customNativeADStyle: adConfig?.nativeADLayout?.customNativeADStyle ??
-          preData.nativeADLayout?.customNativeADStyle,
+          fallback.nativeADLayout?.customNativeADStyle,
       darkCustomNativeADStyle: adConfig?.nativeADLayout?.darkCustomNativeADStyle ??
-          preData.nativeADLayout?.darkCustomNativeADStyle,
+          fallback.nativeADLayout?.darkCustomNativeADStyle,
       flutterNativeADStyle: adConfig?.nativeADLayout?.flutterNativeADStyle ??
-          preData.nativeADLayout?.flutterNativeADStyle,
+          fallback.nativeADLayout?.flutterNativeADStyle,
       darkFlutterNativeADStyle: adConfig?.nativeADLayout?.darkFlutterNativeADStyle ??
-          preData.nativeADLayout?.darkFlutterNativeADStyle,
+          fallback.nativeADLayout?.darkFlutterNativeADStyle,
     ),
     bannerADLayout: BannerADLayout(
       lightDecoration: adConfig?.bannerADLayout?.lightDecoration ??
-          preData.bannerADLayout?.lightDecoration,
+          fallback.bannerADLayout?.lightDecoration,
       darkDecoration: adConfig?.bannerADLayout?.darkDecoration ??
-          preData.bannerADLayout?.darkDecoration,
-      margin: adConfig?.bannerADLayout?.margin ?? preData.bannerADLayout?.margin,
-      padding: adConfig?.bannerADLayout?.padding ?? preData.bannerADLayout?.padding,
-      adSize: adConfig?.bannerADLayout?.adSize ?? preData.bannerADLayout?.adSize,
+          fallback.bannerADLayout?.darkDecoration,
+      margin: adConfig?.bannerADLayout?.margin ?? fallback.bannerADLayout?.margin,
+      padding: adConfig?.bannerADLayout?.padding ?? fallback.bannerADLayout?.padding,
+      adSize: adConfig?.bannerADLayout?.adSize ?? fallback.bannerADLayout?.adSize,
     ),
   );
 }
@@ -307,20 +329,15 @@ class AdStats {
 
 /// Converts a [Color] to its hexadecimal string representation.
 ///
-/// [color] The [Color] object to convert.
+/// Opaque colors become `#RRGGBB`; translucent colors keep their alpha as
+/// `#AARRGGBB` (the format Android's `Color.parseColor` and the iOS factory read).
 String colorToHex(Color color) {
-  /// Accessing the RGBA components using the new accessors
-  final r = (color.r * 255).toInt();
-  final g = (color.g * 255).toInt();
-  final b = (color.b * 255).toInt();
+  String hex(double channel) =>
+      (channel * 255).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
 
-  /// Convert to hex and pad with leading zeros
-  final rHex = r.toRadixString(16).padLeft(2, '0');
-  final gHex = g.toRadixString(16).padLeft(2, '0');
-  final bHex = b.toRadixString(16).padLeft(2, '0');
-
-  /// Combine components into hex string
-  return '#${rHex + gHex + bHex}'.toUpperCase();
+  final rgb = hex(color.r) + hex(color.g) + hex(color.b);
+  final alpha = (color.a * 255).round();
+  return (alpha >= 255 ? '#$rgb' : '#${hex(color.a)}$rgb').toUpperCase();
 }
 
 ///==============================================================================
@@ -377,6 +394,30 @@ bool get shouldShowRewardedInterAd =>
 /// Determines if the Open App ad should be shown.
 bool get shouldShowOpenAppAd =>
     config.adFlag?.showOpenApp == true && config.adFlag?.showAd == true;
+
+/// Whether interstitial ads are preloaded automatically.
+bool get autoPreloadInterAd =>
+    config.preloadConfig?.interstitial != PreloadMode.manual;
+
+/// Whether rewarded ads are preloaded automatically.
+bool get autoPreloadRewardedAd =>
+    config.preloadConfig?.rewarded != PreloadMode.manual;
+
+/// Whether rewarded interstitial ads are preloaded automatically.
+bool get autoPreloadRewardedInterAd =>
+    config.preloadConfig?.rewardedInterstitial != PreloadMode.manual;
+
+/// Whether native ads are preloaded automatically.
+bool get autoPreloadNativeAd =>
+    config.preloadConfig?.native != PreloadMode.manual;
+
+/// Whether banner ads are preloaded automatically.
+bool get autoPreloadBannerAd =>
+    config.preloadConfig?.banner != PreloadMode.manual;
+
+/// Whether app open ads are preloaded automatically.
+bool get autoPreloadOpenAppAd =>
+    config.preloadConfig?.appOpen != PreloadMode.manual;
 
 /// Gets the interstitial ad counter.
 int get getInterCounter => config.adCounter?.interstitialCounter ?? 0;

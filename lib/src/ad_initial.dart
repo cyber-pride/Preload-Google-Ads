@@ -68,7 +68,9 @@ class PreloadGoogleAds {
   }
 
   /// Displays the preloaded App Open ad on demand.
-  void showOpenApp() {
+  ///
+  /// Returns true if an ad is being presented.
+  bool showOpenApp() {
     return _adManager.showOpenApp();
   }
 
@@ -95,8 +97,16 @@ class PreloadGoogleAds {
 
   /// Displays a preloaded full-screen Interstitial ad based on configured click frequency.
   ///
-  /// [callBack] is invoked when the ad closes or fails to present.
-  void showInterstitialAd({
+  /// [callBack] is invoked when the ad closes or fails to present, or right
+  /// away (with no ad and no error) when no ad is shown.
+  ///
+  /// Returns true if an ad is being presented, false if no ad was shown
+  /// (frequency counter not reached, or no ad loaded yet).
+  ///
+  /// With [PreloadMode.auto] a missing ad is requested here and the next one
+  /// is loaded after this one closes. With [PreloadMode.manual] neither
+  /// happens: call [preloadInterstitialAd] beforehand.
+  bool showInterstitialAd({
     required Function(InterstitialAd? ad, AdError? error) callBack,
   }) {
     return _adManager.showInterstitialAd(callBack: callBack);
@@ -104,13 +114,56 @@ class PreloadGoogleAds {
 
   /// Displays a preloaded Rewarded ad based on click counter rules.
   ///
+  /// With [PreloadMode.manual], call [preloadRewardedAd] beforehand; no ad is
+  /// requested here or after it closes.
+  ///
   /// [onReward] is invoked when the user earns a reward item.
-  void showRewardedAd({
+  ///
+  /// Returns true if an ad is being presented, false if no ad was shown.
+  bool showRewardedAd({
     required void Function(RewardedAd? ad, AdError? error) callBack,
     required void Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {
     return _adManager.showRewardedAd(callBack: callBack, onReward: onReward);
   }
+
+  ///==========================================================================
+  /// Manual preloading
+  ///
+  /// Use these for formats set to [PreloadMode.manual] in
+  /// [AdConfigData.preloadConfig]: call one when the user is about to reach the
+  /// screen that shows the ad (e.g. on entering a level, before its "Watch ad"
+  /// button), so ads are only requested when they are likely to be seen.
+  ///
+  /// They also work for [PreloadMode.auto] formats, and do nothing if an ad is
+  /// already loaded or loading, so they are safe to call repeatedly.
+  ///
+  /// Each completes with true once an ad is ready, or false if the format is
+  /// disabled, `initialize()` has not finished (or consent is missing), an ad
+  /// of that format is on screen, or the request fails. A failed request still
+  /// retries in the background (5s, 10s, 20s).
+  ///==========================================================================
+
+  /// Preloads an Interstitial ad.
+  Future<bool> preloadInterstitialAd() => _adManager.preloadInterstitialAd();
+
+  /// Preloads a Rewarded ad.
+  Future<bool> preloadRewardedAd() => _adManager.preloadRewardedAd();
+
+  /// Preloads a Rewarded Interstitial ad.
+  Future<bool> preloadRewardedInterstitialAd() =>
+      _adManager.preloadRewardedInterstitialAd();
+
+  /// Preloads an App Open ad. In [PreloadMode.manual] the ad is shown the next
+  /// time the user returns to the app (or via [showOpenApp]).
+  Future<bool> preloadAppOpenAd() => _adManager.preloadAppOpenAd();
+
+  /// Preloads a standard banner ad for the next [showBannerAd].
+  Future<bool> preloadBannerAd() => _adManager.preloadBannerAd();
+
+  /// Preloads a native ad of [nativeADType] for the next [showNativeAd].
+  Future<bool> preloadNativeAd({NativeADType nativeADType = NativeADType.medium}) =>
+      _adManager.preloadNativeAd(nativeADType: nativeADType);
 
   /// Whether the app must offer a "Privacy settings" entry point.
   ///
@@ -142,7 +195,9 @@ class PreloadGoogleAds {
   /// Displays a preloaded Rewarded Interstitial ad.
   ///
   /// [onReward] is invoked when the user earns a reward item.
-  void showRewardedInterstitialAd({
+  ///
+  /// Returns true if an ad is being presented, false if no ad was shown.
+  bool showRewardedInterstitialAd({
     required void Function(RewardedInterstitialAd? ad, AdError? error) callBack,
     required void Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {

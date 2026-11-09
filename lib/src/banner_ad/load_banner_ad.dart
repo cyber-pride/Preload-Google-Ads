@@ -17,6 +17,21 @@ class LoadBannerAd extends BaseAdLoader {
   @override
   String get adLabel => "Banner";
 
+  @override
+  bool get isAutoPreload => autoPreloadBannerAd;
+
+  @override
+  bool get hasReadyAd => bannerAdObject.isNotEmpty;
+
+  @override
+  void discardAd() {
+    for (final ad in bannerAdObject) {
+      ad.dispose();
+    }
+    bannerAdObject.clear();
+    super.discardAd();
+  }
+
   /// List that holds currently loaded and cached banner ads.
   List<BannerAd> bannerAdObject = [];
 
@@ -47,6 +62,7 @@ class LoadBannerAd extends BaseAdLoader {
         final view = PlatformDispatcher.instance.implicitView;
         if (view == null) {
           state = AdLoadState.failed;
+          notifyPreloadResult(false);
           return;
         }
 
@@ -55,6 +71,7 @@ class LoadBannerAd extends BaseAdLoader {
 
         if (logicalScreenWidth <= 0) {
           state = AdLoadState.failed;
+          notifyPreloadResult(false);
           return;
         }
 
@@ -66,6 +83,7 @@ class LoadBannerAd extends BaseAdLoader {
 
       if (size == null) {
         state = AdLoadState.failed;
+        notifyPreloadResult(false);
         return;
       }
 
@@ -114,6 +132,20 @@ class LoadBannerAd extends BaseAdLoader {
       AppLogger.error("catch error loading banner: $error");
       handleFailureAndRetry(error, onRetry: () => loadAd(isCollapsible: isCollapsible));
     }
+  }
+
+  /// Hands the preloaded banner to a widget, or returns null if none is ready.
+  ///
+  /// In [PreloadMode.auto], taking a banner starts loading the next one so the
+  /// following placement is also instant. When nothing was preloaded the
+  /// widget loads its own banner, so no extra pool request is made.
+  BannerAd? takeBanner() {
+    if (bannerAdObject.isEmpty) return null;
+    final ad = bannerAdObject.removeAt(0);
+    loadTime = null;
+    state = AdLoadState.initial;
+    if (isAutoPreload) loadAd();
+    return ad;
   }
 
   /// Disposes of all loaded ads and resets the state.

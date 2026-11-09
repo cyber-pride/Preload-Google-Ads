@@ -166,6 +166,37 @@ PreloadGoogleAds.instance.initialize(
 );
 ```
 
+### Automatic vs. Manual Preloading
+By default every format is preloaded **automatically**: one ad is loaded at startup and the next one after each show. If some formats only appear on screens many users never open, those preloaded ads go unseen and lower your **show rate**. Set those formats to `PreloadMode.manual` and preload them yourself when the user is about to reach the screen:
+
+```dart
+await PreloadGoogleAds.instance.initialize(
+  adConfigData: AdConfigData(
+    preloadConfig: AdPreloadConfig(
+      rewarded: PreloadMode.manual,
+      rewardedInterstitial: PreloadMode.manual,
+      // interstitial, native, banner, appOpen stay automatic (default)
+    ),
+  ),
+);
+
+// e.g. when the user opens the level screen that has a "Watch ad" button:
+final ready = await PreloadGoogleAds.instance.preloadRewardedAd();
+```
+
+In manual mode the package never requests that format on its own: not at startup, not after a show, not from `reloadUnloadedAds()`, and not when a show call finds no ad ready (it just returns `false` and runs your `callBack`). Native and banner widgets still load their own ad if they appear with nothing preloaded, because that ad is about to be seen.
+
+| Function | Format |
+|----------|--------|
+| `preloadInterstitialAd()` | Interstitial |
+| `preloadRewardedAd()` | Rewarded |
+| `preloadRewardedInterstitialAd()` | Rewarded Interstitial |
+| `preloadAppOpenAd()` | App Open (shown on the next return to the app) |
+| `preloadBannerAd()` | Standard banner |
+| `preloadNativeAd(nativeADType: ...)` | Native (small / medium) |
+
+Each returns a `Future<bool>`: `true` once an ad is ready, `false` if the format is disabled, `initialize()` hasn't finished, consent is missing, or the request failed. They work in automatic mode too and do nothing if an ad is already loaded or loading. Use `AdPreloadConfig.all(PreloadMode.manual)` to make every format manual.
+
 ### Native Ad Custom Styling
 Customize the appearance of native ads with light and dark mode tokens.
 

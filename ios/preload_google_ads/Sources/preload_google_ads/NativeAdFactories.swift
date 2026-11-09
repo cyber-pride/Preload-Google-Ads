@@ -26,18 +26,22 @@ public class BaseNativeAdFactory: NSObject {
             cString.remove(at: cString.startIndex)
         }
 
-        if cString.count != 6 {
+        // Accepts #RRGGBB or #AARRGGBB (same formats as Android's Color.parseColor).
+        guard cString.count == 6 || cString.count == 8 else {
             return defaultColor
         }
 
-        var rgbValue: UInt64 = 0
-        Scanner(string: cString).scanHexInt64(&rgbValue)
+        var value: UInt64 = 0
+        guard Scanner(string: cString).scanHexInt64(&value) else {
+            return defaultColor
+        }
 
+        let alpha = cString.count == 8 ? CGFloat((value >> 24) & 0xFF) / 255.0 : 1.0
         return UIColor(
-            red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
-            green: CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0,
-            blue: CGFloat(rgbValue & 0x0000FF) / 255.0,
-            alpha: CGFloat(1.0)
+            red: CGFloat((value >> 16) & 0xFF) / 255.0,
+            green: CGFloat((value >> 8) & 0xFF) / 255.0,
+            blue: CGFloat(value & 0xFF) / 255.0,
+            alpha: alpha
         )
     }
 
@@ -99,20 +103,17 @@ public class BaseNativeAdFactory: NSObject {
     private func applyButtonBackground(button: UIButton) {
         let radius = (styleMap["button_radius"] as? NSNumber)?.floatValue ?? 5.0
         
-        if let gradients = styleMap["button_gradients"] as? [String], !gradients.isEmpty {
-            let colors = gradients.map { parseColor($0).cgColor }
-            if colors.count >= 2 {
-                if let gradientButton = button as? GradientButton {
-                    gradientButton.gradientColors = colors
-                    gradientButton.cornerRadius = CGFloat(radius)
-                    return
-                }
-            }
+        let gradients = (styleMap["button_gradients"] as? [String]) ?? []
+
+        if gradients.count >= 2, let gradientButton = button as? GradientButton {
+            gradientButton.gradientColors = gradients.map { parseColor($0).cgColor }
+            gradientButton.cornerRadius = CGFloat(radius)
+            return
         }
-        
-        // Fallback to solid color
-        let bgColorHex = styleMap["button_background"] as? String
-        button.backgroundColor = parseColor(bgColorHex, defaultColor: UIColor(red: 0.13, green: 0.59, blue: 0.95, alpha: 1.0))
+
+        // Solid color: a single gradient entry wins over button_background (matches Android).
+        let solidHex = gradients.count == 1 ? gradients[0] : styleMap["button_background"] as? String
+        button.backgroundColor = parseColor(solidHex, defaultColor: UIColor(red: 0.13, green: 0.59, blue: 0.95, alpha: 1.0))
         button.layer.cornerRadius = CGFloat(radius)
         if let gradientButton = button as? GradientButton {
             gradientButton.gradientColors = nil

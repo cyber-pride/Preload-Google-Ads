@@ -29,6 +29,62 @@ abstract class BaseAdLoader with AdLoaderMixin {
   /// Human readable label for logging.
   String get adLabel;
 
+  /// Whether this format uses [PreloadMode.auto].
+  ///
+  /// When false ([PreloadMode.manual]) the loader never requests an ad on its
+  /// own; only [preload] (or a widget that is on screen) does.
+  bool get isAutoPreload;
+
+  /// Whether a loaded, unexpired ad is ready to show right now.
+  bool get hasReadyAd => isAdLoaded && !isExpired;
+
+  /// Disposes the cached ad (if any) without touching the frequency counter.
+  /// Subclasses dispose their ad object and then call `super.discardAd()`.
+  void discardAd() {
+    loadTime = null;
+    if (!isShowing) state = AdLoadState.initial;
+  }
+
+  final List<Completer<bool>> _preloadWaiters = [];
+
+  /// Completes every pending [preload] future with [ready].
+  void notifyPreloadResult(bool ready) {
+    if (_preloadWaiters.isEmpty) return;
+    final waiters = List.of(_preloadWaiters);
+    _preloadWaiters.clear();
+    for (final waiter in waiters) {
+      if (!waiter.isCompleted) waiter.complete(ready);
+    }
+  }
+
+  /// Requests an ad now so it is ready when the user reaches its placement.
+  ///
+  /// Works in both preload modes. Completes with true once an ad is ready
+  /// (immediately if one already is), or false if the format is disabled,
+  /// ads may not be requested yet (before `initialize()` or without consent),
+  /// an ad is on screen, or the request fails. A failed request still retries
+  /// in the background (5s, 10s, 20s), so the ad may become ready later.
+  Future<bool> preload() {
+    if (!AdManager.instance.isSdkStarted) {
+      AppLogger.warn("$adLabel: preload skipped, call initialize() first "
+          "(and obtain consent if required).");
+      return Future.value(false);
+    }
+    if (!isEnabled || !AdManager.instance.canRequestAds) {
+      return Future.value(false);
+    }
+    if (hasReadyAd) return Future.value(true);
+    if (isShowing) return Future.value(false);
+    if (isAdLoaded) discardAd(); // Loaded but expired: replace it.
+
+    final waiter = Completer<bool>();
+    _preloadWaiters.add(waiter);
+    if (!isLoading) load();
+    // load() may decline synchronously (e.g. no screen size for a banner).
+    if (!isLoading && !hasReadyAd) notifyPreloadResult(false);
+    return waiter.future;
+  }
+
   /// Maximum duration allowed between loading and showing an ad.
   ///
   /// Defaults to 4 hours (AdMob app open guidance). Formats with a shorter
@@ -71,7 +127,9 @@ abstract class BaseAdLoader with AdLoaderMixin {
       AppLogger.log("$adLabel: consent not obtained, ad request skipped.");
       return false;
     }
-    if (isLoading || isShowing) {
+    // Skip when an ad is already in flight, on screen, or cached and ready:
+    // a second request would replace (and leak) the cached ad and waste a request.
+    if (isLoading || isShowing || isAdLoaded) {
       AppLogger.log("$adLabel is already ${state.name}. Skipping load request.");
       return false;
     }
@@ -82,9 +140,12 @@ abstract class BaseAdLoader with AdLoaderMixin {
   /// Handles successful load events across all ad types.
   void handleLoadSuccess() {
     AppLogger.log("$adLabel loaded successfully.");
+    // A retry may still be scheduled from an earlier failure; it is no longer needed.
+    cancelReloadTimer();
     loadTime = DateTime.now();
     state = AdLoadState.ready;
     retryAttempts = maxRetries;
+    notifyPreloadResult(true);
   }
 
   /// Centralized retry handling with a capped exponential backoff (5s, 10s, 20s).
@@ -97,6 +158,7 @@ abstract class BaseAdLoader with AdLoaderMixin {
   void handleFailureAndRetry(dynamic error, {VoidCallback? onRetry}) {
     handleLoadError(adLabel, error);
     loadTime = null;
+    notifyPreloadResult(false);
     if (retryAttempts > 0) {
       final attempt = maxRetries - retryAttempts; // 0-based
       retryAttempts--;
@@ -126,7 +188,7 @@ abstract class BaseAdLoader with AdLoaderMixin {
       return true;
     }
     incrementCounter();
-    if (!isAdLoaded && state != AdLoadState.loading) {
+    if (isAutoPreload && !isAdLoaded && state != AdLoadState.loading) {
       load();
     }
     return false;
@@ -136,6 +198,7 @@ abstract class BaseAdLoader with AdLoaderMixin {
   @override
   void reset() {
     cancelReloadTimer();
+    notifyPreloadResult(false);
     super.reset();
   }
 }

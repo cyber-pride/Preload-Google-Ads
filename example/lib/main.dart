@@ -14,7 +14,19 @@ void main() async {
 
   // Initialize Preload Google Ads SDK with Light & Dark mode styling configuration
   await PreloadGoogleAds.instance.initialize(
-    adConfigData: AdConfigData(
+    adConfigData: AdConfigData(/**
+      preloadConfig: AdPreloadConfig(
+        interstitial: PreloadMode.manual,
+        rewarded: PreloadMode.manual,
+        rewardedInterstitial: PreloadMode.manual,
+        native: PreloadMode.manual,
+        banner: PreloadMode.manual,
+        appOpen: PreloadMode.manual,
+      ),**/
+      adCounter: AdCounter(
+        interstitialCounter: 0,
+        rewardedCounter: 0,
+      ),
       nativeADLayout: NativeADLayout(
         customNativeADStyle: CustomNativeADStyle(
           titleColor: const Color(0xFF0F172A),
@@ -98,23 +110,35 @@ class MainNavigationContainer extends StatefulWidget {
 class _MainNavigationContainerState extends State<MainNavigationContainer> {
   int _currentIndex = 0;
 
+  /// Screens the user has opened at least once. An IndexedStack builds every
+  /// child up front, so without this the banner and native ad widgets on
+  /// unopened screens would load ads nobody sees, hurting show rate (and
+  /// defeating PreloadMode.manual). A screen is built on its first visit and
+  /// then kept alive so its state survives tab switches.
+  final Set<int> _visited = {0};
+
   void _selectScreen(int index) {
     setState(() {
       _currentIndex = index;
+      _visited.add(index);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget Function()> builders = [
+      () => HomeDashboardScreen(
+            onNavigate: _selectScreen,
+            themeProvider: widget.themeProvider,
+          ),
+      () => CustomStyleScreen(themeProvider: widget.themeProvider),
+      () => const NativeListScreen(),
+      () => BannerAdScreen(themeProvider: widget.themeProvider),
+      () => const FormatLabScreen(),
+    ];
     final List<Widget> screens = [
-      HomeDashboardScreen(
-        onNavigate: _selectScreen,
-        themeProvider: widget.themeProvider,
-      ),
-      CustomStyleScreen(themeProvider: widget.themeProvider),
-      const NativeListScreen(),
-      BannerAdScreen(themeProvider: widget.themeProvider),
-      const FormatLabScreen(),
+      for (var i = 0; i < builders.length; i++)
+        _visited.contains(i) ? builders[i]() : const SizedBox.shrink(),
     ];
 
     return Stack(

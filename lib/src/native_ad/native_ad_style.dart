@@ -47,7 +47,9 @@ class NativeADStyle {
       return MediaQuery.platformBrightnessOf(context) == Brightness.dark ||
           Theme.of(context).brightness == Brightness.dark;
     }
-    return false;
+    // No context (e.g. during initialize()): fall back to the device setting.
+    return WidgetsFlutterBinding.ensureInitialized().platformDispatcher.platformBrightness ==
+        Brightness.dark;
   }
 
   /// Dynamically resolves the active CustomNativeADStyle based on theme mode.

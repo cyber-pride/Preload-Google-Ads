@@ -20,10 +20,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-    }
-
     sourceSets {
         main.java.srcDirs += "src/main/kotlin"
         test.java.srcDirs += "src/test/kotlin"
@@ -52,7 +48,20 @@ android {
     }
 }
 
+// Kotlin compiler target, using the compilerOptions DSL (kotlinOptions is
+// removed in Kotlin 2.3+). Guarded so the build also works when the host
+// project compiles Kotlin through AGP's built-in Kotlin support.
+plugins.withId("org.jetbrains.kotlin.android") {
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+        }
+    }
+}
+
 dependencies {
     implementation 'com.intuit.sdp:sdp-android:1.1.0'
+    // Keep: newer WorkManager fixes an AdMob startup crash (the SDK's bundled
+    // version is older). Do not remove even though the plugin doesn't call it.
     implementation 'androidx.work:work-runtime:2.11.2'
 }

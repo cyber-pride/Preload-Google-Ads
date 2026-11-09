@@ -19,6 +19,9 @@ class InterAd extends BaseAdLoader {
   @override
   String get adLabel => "Interstitial";
 
+  @override
+  bool get isAutoPreload => autoPreloadInterAd;
+
   /// The interstitial ad object.
   InterstitialAd? _interstitialAd;
 
@@ -53,6 +56,7 @@ class InterAd extends BaseAdLoader {
       state = AdLoadState.failed;
       /// Disposes the ad if any error occurs.
       _interstitialAd?.dispose();
+      _interstitialAd = null;
       handleFailureAndRetry(error);
     }
   }
@@ -61,27 +65,27 @@ class InterAd extends BaseAdLoader {
   ///
   /// Only shows the ad if the interstitial is loaded and the counter limit is reached.
   /// After showing the ad, it resets the counter and loads a new ad.
-  void showInter({
+  ///
+  /// Returns true if an ad is being presented; false if [callBack] was
+  /// already called because no ad was shown.
+  bool showInter({
     required Function({InterstitialAd? ad, AdError? error}) callBack,
   }) {
     incrementCounter();
     if (counter < getInterCounter) {
       // Counter limit not reached yet. Do NOT waste ad request or show.
       callBack();
-      return;
+      return false;
     }
 
     if (shouldShowInterAd && _interstitialAd != null && isAdLoaded) {
       // Check if ad expired (AdMob 4-hour TTL rule)
       if (isExpired) {
         AppLogger.warn('Interstitial ad expired. Fetching fresh ad.');
-        _interstitialAd?.dispose();
-        _interstitialAd = null;
-        loadTime = null;
-        state = AdLoadState.initial;
-        load();
+        discardAd();
+        if (isAutoPreload) load();
         callBack();
-        return;
+        return false;
       }
 
       resetCounter();
@@ -99,7 +103,7 @@ class InterAd extends BaseAdLoader {
             ad.dispose();
             _interstitialAd = null;
             state = AdLoadState.initial;
-            load();
+            if (isAutoPreload) load();
           },
 
           /// Called when an impression of the ad is recorded.
@@ -115,16 +119,26 @@ class InterAd extends BaseAdLoader {
             ad.dispose();
             _interstitialAd = null;
             state = AdLoadState.failed;
-            load();
+            if (isAutoPreload) load();
           },
         )
         ..show();
     } else {
-      if (!isAdLoaded && state != AdLoadState.loading) {
+      if (isAutoPreload && !isAdLoaded && state != AdLoadState.loading) {
         load(); // Request ad only when user is close/ready to view
       }
       callBack();
+      return false;
     }
+    return true;
+  }
+
+  @override
+  void discardAd() {
+    if (isShowing) return;
+    _interstitialAd?.dispose();
+    _interstitialAd = null;
+    super.discardAd();
   }
 
   /// Resets the ad state and disposes of loaded ads.
