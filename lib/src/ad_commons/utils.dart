@@ -27,7 +27,7 @@ AdConfigData preData = AdConfigData(
     showBanner: true,
     showInterstitial: true,
     showNative: true,
-    showOpenApp: true,
+    showAppOpen: true,
     showRewarded: true,
     showRewardedInterstitial: true,
   ),
@@ -158,8 +158,8 @@ Future<AdConfigData> setConfigData(
         ids.nativeId,
         'Native',
       ),
-      showOpenApp: flag(
-        adConfig?.adFlag?.showOpenApp ?? fallback.adFlag?.showOpenApp,
+      showAppOpen: flag(
+        adConfig?.adFlag?.showAppOpen ?? fallback.adFlag?.showAppOpen,
         ids.appOpenId,
         'App Open',
       ),
@@ -392,8 +392,8 @@ bool get shouldShowRewardedInterAd =>
     config.adFlag?.showAd == true;
 
 /// Determines if the Open App ad should be shown.
-bool get shouldShowOpenAppAd =>
-    config.adFlag?.showOpenApp == true && config.adFlag?.showAd == true;
+bool get shouldshowAppOpenAd =>
+    config.adFlag?.showAppOpen == true && config.adFlag?.showAd == true;
 
 /// Whether interstitial ads are preloaded automatically.
 bool get autoPreloadInterAd =>

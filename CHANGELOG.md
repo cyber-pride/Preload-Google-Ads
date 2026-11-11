@@ -8,7 +8,7 @@
 - **Fix: calling `initialize()` again**: a repeat call now updates the current config instead of resetting it to defaults. Settings you leave out keep their current value; consent stays required once enabled (before, a second call without `requireConsent` let ads load without consent); cached ads whose ad unit ID, flag or style changed are replaced.
 - **Fix: theme changes with `AdLayout.flutterLayout`**: switching light/dark now also refreshes cached Flutter-template native ads, and a native ad still loading when the theme changes is dropped instead of appearing in the old style.
 - **Fix: dark mode at startup**: with `AdThemeMode.system`, native-layout ads now follow the device's light/dark setting from `initialize()`, not only after `setThemeMode(context:)`.
-- **New**: `showInterstitialAd`, `showRewardedAd`, `showRewardedInterstitialAd` and `showOpenApp` return `true` when an ad is being presented and `false` when none was shown. Existing code that ignores the result is unaffected.
+- **New**: `showInterstitialAd`, `showRewardedAd`, `showRewardedInterstitialAd` and `showAppOpen` return `true` when an ad is being presented and `false` when none was shown. Existing code that ignores the result is unaffected.
 - **Banners**: showing the preloaded banner now starts loading the next one, so every banner placement is instant, not just the first.
 - **Colors**: translucent style colors keep their alpha (`#AARRGGBB`) on Android and iOS.
 - **iOS**: a single `buttonGradients` color is used as the button color, matching Android.

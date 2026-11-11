@@ -61,7 +61,7 @@ class AppLifecycleReactor {
   void _onAppStateChanged(AppState appState) {
     AppLogger.log('New AppState state: $appState');
 
-    if (appState != AppState.foreground || !shouldShowOpenAppAd) return;
+    if (appState != AppState.foreground || !shouldshowAppOpenAd) return;
 
     if (!FullScreenAdGuard.canShowAppOpen()) {
       AppLogger.log('Skipping App Open ad: returning from another ad.');

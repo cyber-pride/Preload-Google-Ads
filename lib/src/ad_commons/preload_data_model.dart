@@ -102,6 +102,10 @@ class AdConfigData {
   /// Toggles for showing/hiding different types of ads.
   final AdFlag? adFlag;
 
+  /// Automatic or manual preloading per ad format. Null means every format
+  /// is preloaded automatically.
+  final AdPreloadConfig? preloadConfig;
+
   /// Styling preferences for native ads (Light and Dark mode support).
   final NativeADLayout? nativeADLayout;
 
@@ -110,10 +114,6 @@ class AdConfigData {
 
   /// Theme mode for ad styling (system, light, or dark).
   final AdThemeMode themeMode;
-
-  /// Automatic or manual preloading per ad format. Null means every format
-  /// is preloaded automatically.
-  final AdPreloadConfig? preloadConfig;
 
   /// Whether [themeMode] was passed explicitly (rather than defaulted).
   ///
@@ -273,7 +273,7 @@ class AdFlag {
   final bool? showNative;
 
   /// Show open app ad.
-  final bool? showOpenApp;
+  final bool? showAppOpen;
 
   /// Show rewarded ad.
   final bool? showRewarded;
@@ -287,7 +287,7 @@ class AdFlag {
     this.showBanner,
     this.showInterstitial,
     this.showNative,
-    this.showOpenApp,
+    this.showAppOpen,
     this.showRewarded,
     this.showRewardedInterstitial,
   });

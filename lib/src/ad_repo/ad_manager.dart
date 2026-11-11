@@ -95,7 +95,7 @@ class AdManager {
     reloadUnloadedAds();
 
     // Show App Open ads when the user returns to the app (registered once).
-    if (shouldShowOpenAppAd) {
+    if (shouldshowAppOpenAd) {
       await LifeCycleManager.instance.getOpenAppAdvertise();
     }
   }
@@ -230,7 +230,7 @@ class AdManager {
         idsB?.rewardedInterstitialId, flagA?.showRewardedInterstitial,
         flagB?.showRewardedInterstitial));
     discard(AppOpenAdManager.instance, changed(idsA?.appOpenId, idsB?.appOpenId,
-        flagA?.showOpenApp, flagB?.showOpenApp));
+        flagA?.showAppOpen, flagB?.showAppOpen));
     discard(LoadBannerAd.instance, changed(idsA?.bannerId, idsB?.bannerId,
         flagA?.showBanner, flagB?.showBanner));
 
@@ -332,8 +332,8 @@ class AdManager {
   }
 
   /// Shows the open app ad.
-  bool showOpenApp() {
-    return PlugAd.getInstance().showOpenAppAd();
+  bool showAppOpen() {
+    return PlugAd.getInstance().showAppOpenAd();
   }
 
   /// Shows a standard anchored banner ad.

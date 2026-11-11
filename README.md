@@ -158,7 +158,7 @@ PreloadGoogleAds.instance.initialize(
       showBanner: true,
       showInterstitial: true,
       showNative: true,
-      showOpenApp: true,
+      showAppOpen: true,
       showRewarded: true,
       showRewardedInterstitial: true,
     ),
@@ -313,7 +313,7 @@ PreloadGoogleAds.instance.showRewardedInterstitialAd(
 
 #### 7. App Open Ad
 ```dart
-PreloadGoogleAds.instance.showOpenApp();
+PreloadGoogleAds.instance.showAppOpen();
 ```
 
 ---
@@ -328,7 +328,7 @@ PreloadGoogleAds.instance.showOpenApp();
 | **Interstitial** | `PreloadGoogleAds.instance.showInterstitialAd(callBack: (ad, error) => ...)` | Shows full-screen interstitial ad |
 | **Rewarded** | `PreloadGoogleAds.instance.showRewardedAd(callBack: ..., onReward: (ad, reward) => ...)` | Shows rewarded ad and grants reward item |
 | **Rewarded Interstitial** | `PreloadGoogleAds.instance.showRewardedInterstitialAd(callBack: ..., onReward: (ad, reward) => ...)` | Shows rewarded interstitial ad and grants reward item |
-| **App Open** | `PreloadGoogleAds.instance.showOpenApp()` | Shows app open ad |
+| **App Open** | `PreloadGoogleAds.instance.showAppOpen()` | Shows app open ad |
 
 > [!TIP]
 > **Pro Tip**: To show an ad during navigation, place your navigation logic inside the `callBack`. This ensures the transition happens exactly when the ad is closed or fails to load.

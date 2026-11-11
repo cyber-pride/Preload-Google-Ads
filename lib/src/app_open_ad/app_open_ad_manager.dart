@@ -12,7 +12,7 @@ class AppOpenAdManager extends BaseAdLoader {
   AppOpenAdManager._internal();
 
   @override
-  bool get isEnabled => shouldShowOpenAppAd;
+  bool get isEnabled => shouldshowAppOpenAd;
 
   @override
   String get adLabel => "App Open";

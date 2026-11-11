@@ -37,7 +37,7 @@ abstract class AdRepo {
   Future<void> loadAppOpenAd();
 
   /// Displays the app open ad.
-  bool showOpenAppAd();
+  bool showAppOpenAd();
 
   /// Loads the interstitial ad.
   void loadInterAd();

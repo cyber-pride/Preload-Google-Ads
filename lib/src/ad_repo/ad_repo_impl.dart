@@ -65,7 +65,7 @@ class AdRepoImpl extends AdRepo {
 
   /// Displays the app open ad using AppOpenAdManager instance if available
   @override
-  bool showOpenAppAd() {
+  bool showAppOpenAd() {
     return AppOpenAdManager.instance.showAdIfAvailable();
   }
 
