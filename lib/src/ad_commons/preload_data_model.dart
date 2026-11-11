@@ -275,10 +275,6 @@ class AdFlag {
   /// Show app open ad.
   final bool? showAppOpen;
 
-  /// Deprecated alias for [showAppOpen].
-  @Deprecated('Use showAppOpen instead.')
-  bool? get showAppOpenAd => showAppOpen;
-
   /// Show rewarded ad.
   final bool? showRewarded;
 
@@ -291,11 +287,10 @@ class AdFlag {
     this.showBanner,
     this.showInterstitial,
     this.showNative,
-    bool? showAppOpen,
-    @Deprecated('Use showAppOpen instead.') bool? showAppOpenAd,
+    this.showAppOpen,
     this.showRewarded,
     this.showRewardedInterstitial,
-  }) : showAppOpen = showAppOpen ?? showAppOpenAd;
+  });
 }
 
 /// Configuration for the layout of native ads.
