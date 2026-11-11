@@ -273,7 +273,7 @@ class AdFlag {
   final bool? showNative;
 
   /// Show open app ad.
-  final bool? showAppOpen;
+  final bool? showAppOpenAd;
 
   /// Show rewarded ad.
   final bool? showRewarded;
@@ -287,7 +287,7 @@ class AdFlag {
     this.showBanner,
     this.showInterstitial,
     this.showNative,
-    this.showAppOpen,
+    this.showAppOpenAd,
     this.showRewarded,
     this.showRewardedInterstitial,
   });

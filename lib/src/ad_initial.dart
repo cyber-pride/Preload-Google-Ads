@@ -70,8 +70,8 @@ class PreloadGoogleAds {
   /// Displays the preloaded App Open ad on demand.
   ///
   /// Returns true if an ad is being presented.
-  bool showAppOpen() {
-    return _adManager.showAppOpen();
+  bool showAppOpenAd() {
+    return _adManager.showAppOpenAd();
   }
 
   /// Displays a standard anchored adaptive banner ad inside a responsive container.
@@ -155,7 +155,7 @@ class PreloadGoogleAds {
       _adManager.preloadRewardedInterstitialAd();
 
   /// Preloads an App Open ad. In [PreloadMode.manual] the ad is shown the next
-  /// time the user returns to the app (or via [showAppOpen]).
+  /// time the user returns to the app (or via [showAppOpenAd]).
   Future<bool> preloadAppOpenAd() => _adManager.preloadAppOpenAd();
 
   /// Preloads a standard banner ad for the next [showBannerAd].

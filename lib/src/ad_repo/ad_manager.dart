@@ -230,7 +230,7 @@ class AdManager {
         idsB?.rewardedInterstitialId, flagA?.showRewardedInterstitial,
         flagB?.showRewardedInterstitial));
     discard(AppOpenAdManager.instance, changed(idsA?.appOpenId, idsB?.appOpenId,
-        flagA?.showAppOpen, flagB?.showAppOpen));
+        flagA?.showAppOpenAd, flagB?.showAppOpenAd));
     discard(LoadBannerAd.instance, changed(idsA?.bannerId, idsB?.bannerId,
         flagA?.showBanner, flagB?.showBanner));
 
@@ -332,7 +332,7 @@ class AdManager {
   }
 
   /// Shows the open app ad.
-  bool showAppOpen() {
+  bool showAppOpenAd() {
     return PlugAd.getInstance().showAppOpenAd();
   }
 

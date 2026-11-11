@@ -165,7 +165,7 @@ class _FormatLabScreenState extends State<FormatLabScreen> {
   }
 
   void _showAppOpen() {
-    PreloadGoogleAds.instance.showAppOpen();
+    PreloadGoogleAds.instance.showAppOpenAd();
   }
 
   void _showSnackBar(String msg) {
