@@ -158,7 +158,7 @@ PreloadGoogleAds.instance.initialize(
       showBanner: true,
       showInterstitial: true,
       showNative: true,
-      showAppOpenAd: true,
+      showAppOpen: true,
       showRewarded: true,
       showRewardedInterstitial: true,
     ),

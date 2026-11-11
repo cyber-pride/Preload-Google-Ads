@@ -1,5 +1,6 @@
 ## Unreleased
 
+- **Renamed**: `AdFlag.showAppOpenAd` is now `AdFlag.showAppOpen`, matching the other flags (`showInterstitial`, `showRewarded`, ...). The old name still works but is deprecated.
 - **New: manual preloading per ad format**: `AdConfigData(preloadConfig: AdPreloadConfig(...))` sets each format to `PreloadMode.auto` (default, unchanged behavior) or `PreloadMode.manual`. Manual formats are never requested by the package on its own; load them with the new `preloadInterstitialAd()`, `preloadRewardedAd()`, `preloadRewardedInterstitialAd()`, `preloadAppOpenAd()`, `preloadBannerAd()` and `preloadNativeAd()`, which return `Future<bool>` (true once an ad is ready). Use it for formats on screens many users never open, to keep show rate high.
 - **Banners**: when no banner was preloaded, showing one no longer also starts an extra pool request alongside the widget's own.
 - `reloadUnloadedAds()` now does nothing before the SDK has started.

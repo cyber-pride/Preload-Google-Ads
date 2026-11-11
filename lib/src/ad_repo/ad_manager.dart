@@ -230,7 +230,7 @@ class AdManager {
         idsB?.rewardedInterstitialId, flagA?.showRewardedInterstitial,
         flagB?.showRewardedInterstitial));
     discard(AppOpenAdManager.instance, changed(idsA?.appOpenId, idsB?.appOpenId,
-        flagA?.showAppOpenAd, flagB?.showAppOpenAd));
+        flagA?.showAppOpen, flagB?.showAppOpen));
     discard(LoadBannerAd.instance, changed(idsA?.bannerId, idsB?.bannerId,
         flagA?.showBanner, flagB?.showBanner));
 

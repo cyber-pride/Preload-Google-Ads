@@ -47,7 +47,7 @@ void main() {
       expect(cfg.adFlag?.showInterstitial, isTrue);
       expect(cfg.adFlag?.showBanner, isFalse);
       expect(cfg.adFlag?.showRewarded, isFalse);
-      expect(cfg.adFlag?.showAppOpenAd, isFalse);
+      expect(cfg.adFlag?.showAppOpen, isFalse);
     });
 
     test('Debug build keeps formats enabled with Google test IDs', () async {
