@@ -15,12 +15,17 @@ AdConfigData preData = AdConfigData(
     rewardedInterstitialId: AdTestIds.rewardedInterstitial,
   ),
   adCounter: AdCounter(
+    showAdFirst: false,
     // Show an interstitial on every 3rd trigger by default. Showing one on
     // every action is disruptive and risks AdMob's interstitial policy.
     interstitialCounter: 3,
+    interstitialSeconds: 0,
     nativeCounter: 0,
+    nativeSeconds: 0,
     rewardedCounter: 0,
+    rewardedSeconds: 0,
     rewardedInterstitialCounter: 0,
+    rewardedInterstitialSeconds: 0,
   ),
   adFlag: AdFlag(
     showAd: true,
@@ -131,6 +136,8 @@ Future<AdConfigData> setConfigData(
           fallback.adIDs?.rewardedInterstitialId,
     ),
     adCounter: AdCounter(
+      showAdFirst: adConfig?.adCounter?.showAdFirst ??
+          fallback.adCounter?.showAdFirst,
       interstitialCounter: adConfig?.adCounter?.interstitialCounter ??
           fallback.adCounter?.interstitialCounter,
       nativeCounter: adConfig?.adCounter?.nativeCounter ??
@@ -140,6 +147,15 @@ Future<AdConfigData> setConfigData(
       rewardedInterstitialCounter:
           adConfig?.adCounter?.rewardedInterstitialCounter ??
               fallback.adCounter?.rewardedInterstitialCounter,
+      interstitialSeconds: adConfig?.adCounter?.interstitialSeconds ??
+          fallback.adCounter?.interstitialSeconds,
+      nativeSeconds: adConfig?.adCounter?.nativeSeconds ??
+          fallback.adCounter?.nativeSeconds,
+      rewardedSeconds: adConfig?.adCounter?.rewardedSeconds ??
+          fallback.adCounter?.rewardedSeconds,
+      rewardedInterstitialSeconds:
+          adConfig?.adCounter?.rewardedInterstitialSeconds ??
+              fallback.adCounter?.rewardedInterstitialSeconds,
     ),
     adFlag: AdFlag(
       showAd: adConfig?.adFlag?.showAd ?? fallback.adFlag?.showAd,
@@ -427,6 +443,22 @@ int get getNativeCounter => config.adCounter?.nativeCounter ?? 0;
 
 /// Gets the rewarded ad counter.
 int get getRewardedCounter => config.adCounter?.rewardedCounter ?? 0;
+
+/// Minimum seconds between two interstitial ads (0 = no limit).
+int get getInterSeconds => config.adCounter?.interstitialSeconds ?? 0;
+
+/// Minimum seconds between two native ads (0 = no limit).
+int get getNativeSeconds => config.adCounter?.nativeSeconds ?? 0;
+
+/// Minimum seconds between two rewarded ads (0 = no limit).
+int get getRewardedSeconds => config.adCounter?.rewardedSeconds ?? 0;
+
+/// Minimum seconds between two rewarded interstitial ads (0 = no limit).
+int get getRewardedInterSeconds =>
+    config.adCounter?.rewardedInterstitialSeconds ?? 0;
+
+/// Whether the first trigger of each format shows an ad before counting.
+bool get getShowAdFirst => config.adCounter?.showAdFirst ?? false;
 
 /// Gets the rewarded interstitial ad counter.
 int get getRewardedInterCounter =>

@@ -97,6 +97,11 @@ class LoadBannerAd extends BaseAdLoader {
             )
           : const AdRequest();
 
+      // Banners auto-refresh: the SDK calls onAdLoaded again on every
+      // successful refresh and onAdFailedToLoad on every failed one, long after
+      // the banner was handed to a widget. Only the first result counts.
+      var initialLoadDone = false;
+
       // Create and configure the banner ad.
       bannerAd = BannerAd(
         adUnitId: unitIDBanner,
@@ -104,6 +109,13 @@ class LoadBannerAd extends BaseAdLoader {
         request: request,
         listener: BannerAdListener(
           onAdLoaded: (Ad ad) {
+            if (initialLoadDone) {
+              // A refresh of a banner that may already be on screen: re-adding
+              // it to the pool would hand the same ad to a second widget.
+              AdStats.instance.bannerLoad.value++;
+              return;
+            }
+            initialLoadDone = true;
             // Handle successful ad load.
             if (bannerAd != null) {
               bannerAdObject.add(bannerAd);
@@ -118,6 +130,13 @@ class LoadBannerAd extends BaseAdLoader {
           onAdFailedToLoad: (Ad ad, LoadAdError error) {
             // Handle failed ad load and retry logic.
             AdStats.instance.bannerFailed.value++;
+            if (initialLoadDone) {
+              // A failed refresh: the banner keeps its current creative. It may
+              // be on screen, so disposing it here would crash its AdWidget
+              // ("AdWidget requires Ad.load to be called...").
+              AppLogger.log("Banner refresh failed: ${error.message}");
+              return;
+            }
             ad.dispose();
             handleFailureAndRetry(error, onRetry: () => loadAd(isCollapsible: isCollapsible));
           },

@@ -51,10 +51,10 @@ abstract class BaseNativeAdLoader extends BaseAdLoader {
 
   /// Takes the cached ad for display, or returns null if none is ready.
   ///
-  /// Expired ads are disposed instead of shown. In [PreloadMode.auto] a fresh
-  /// load refills the pool for the next placement; in [PreloadMode.manual] a
-  /// load starts only when no ad was ready, because the calling widget is on
-  /// screen and waiting for one.
+  /// Expired ads are disposed instead of shown. In [PreloadMode.auto] the pool
+  /// is refilled once the next placement can show an ad ([isLoadDue]); in
+  /// both modes a load starts right away when no ad was ready, because the
+  /// calling widget is on screen and waiting for one.
   NativeAd? takeAd() {
     final expired = ads.where((ad) => !_isFresh(ad)).toList();
     if (expired.isNotEmpty) {
@@ -66,7 +66,7 @@ abstract class BaseNativeAdLoader extends BaseAdLoader {
     }
     final ad = ads.isNotEmpty ? ads.removeAt(0) : null;
     _syncPoolState();
-    if (isAutoPreload || ad == null) loadAd();
+    if ((isAutoPreload && isLoadDue) || ad == null) loadAd();
     return ad;
   }
 
@@ -112,6 +112,14 @@ abstract class BaseNativeAdLoader extends BaseAdLoader {
 
   @override
   bool get isAutoPreload => autoPreloadNativeAd;
+
+  /// A native placement shows after [getNativeCounter] skipped placements,
+  /// i.e. on every (nativeCounter + 1)th placement.
+  @override
+  int get counterLimit => getNativeCounter + 1;
+
+  @override
+  int get minSecondsBetweenAds => getNativeSeconds;
 
   @override
   bool get hasReadyAd => ads.any(_isFresh);

@@ -38,6 +38,36 @@ abstract class BaseAdLoader with AdLoaderMixin {
   /// Whether a loaded, unexpired ad is ready to show right now.
   bool get hasReadyAd => isAdLoaded && !isExpired;
 
+  /// The [AdCounter] limit for this format, as a number of triggers: an ad
+  /// shows on every [counterLimit]th trigger. 0 or 1 means every trigger.
+  /// Formats without a counter (banner, App Open) keep 0.
+  int get counterLimit => 0;
+
+  /// Whether the next trigger may show an ad, so it is worth loading one now.
+  ///
+  /// Auto-preload waits until then instead of loading right after the
+  /// previous show: with a limit of 3 the ad loads on the 2nd trigger and
+  /// shows on the 3rd. A request made earlier would sit unused (or expire)
+  /// while the user is still counting up, which lowers show rate.
+  bool get isLoadDue => isFirstAdPending || counter + 1 >= counterLimit;
+
+  /// Minimum seconds between two ads of this format ([AdCounter]'s
+  /// `…Seconds`). Formats without a counter keep 0 (no limit).
+  int get minSecondsBetweenAds => 0;
+
+  /// Whether at least [minSecondsBetweenAds] have passed since this format
+  /// last showed an ad (always true before the first ad).
+  bool get hasTimeGapPassed {
+    final last = lastAdShownTime;
+    if (last == null || minSecondsBetweenAds <= 0) return true;
+    return DateTime.now().difference(last).inSeconds >= minSecondsBetweenAds;
+  }
+
+  /// In [PreloadMode.auto], loads an ad if the next trigger can show it.
+  void autoLoadIfDue() {
+    if (isAutoPreload && isLoadDue) load();
+  }
+
   /// Disposes the cached ad (if any) without touching the frequency counter.
   /// Subclasses dispose their ad object and then call `super.discardAd()`.
   void discardAd() {
@@ -285,9 +315,23 @@ mixin AdLoaderMixin {
     }
   }
 
-  /// Resets the counter to zero.
+  /// Whether this format has shown an ad since app start. Used by
+  /// [AdCounter.showAdFirst]; set by [resetCounter], which runs on each show.
+  bool hasShownFirstAd = false;
+
+  /// True when [AdCounter.showAdFirst] is on and this format has not shown
+  /// an ad yet, so the next trigger shows one regardless of the counter.
+  bool get isFirstAdPending => getShowAdFirst && !hasShownFirstAd;
+
+  /// When this format last showed an ad; used for [AdCounter]'s `…Seconds`
+  /// time gap. Set by [resetCounter], which runs on each show.
+  DateTime? lastAdShownTime;
+
+  /// Resets the counter to zero. Called when an ad is shown.
   void resetCounter() {
     counter = 0;
+    hasShownFirstAd = true;
+    lastAdShownTime = DateTime.now();
   }
 
   /// Increments the counter.

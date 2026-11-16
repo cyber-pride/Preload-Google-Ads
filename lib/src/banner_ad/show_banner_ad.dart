@@ -37,6 +37,10 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
 
       if (size == null) return;
 
+      // Banners auto-refresh, so onAdFailedToLoad also fires for a failed
+      // refresh of the banner already on screen; that banner must not be disposed.
+      var initialLoadDone = false;
+
       final stdBanner = BannerAd(
         adUnitId: unitIDBanner,
         size: size,
@@ -44,6 +48,7 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
         listener: BannerAdListener(
           onAdLoaded: (Ad ad) {
             AdStats.instance.bannerLoad.value++;
+            initialLoadDone = true;
             if (!mounted) {
               // Widget left the screen before the ad arrived: release it.
               ad.dispose();
@@ -56,6 +61,7 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
           onAdImpression: (ad) => AdStats.instance.bannerImp.value++,
           onAdFailedToLoad: (Ad ad, LoadAdError error) {
             AdStats.instance.bannerFailed.value++;
+            if (initialLoadDone) return; // failed refresh: keep showing the current creative
             ad.dispose();
           },
         ),

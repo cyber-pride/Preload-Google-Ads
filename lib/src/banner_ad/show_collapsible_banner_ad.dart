@@ -49,6 +49,10 @@ class _ShowCollapsibleBannerAdState extends State<ShowCollapsibleBannerAd> {
         },
       );
 
+      // Banners auto-refresh, so onAdFailedToLoad also fires for a failed
+      // refresh of the banner already on screen; that banner must not be disposed.
+      var initialLoadDone = false;
+
       final colBanner = BannerAd(
         adUnitId: unitIDBanner,
         size: size,
@@ -56,6 +60,7 @@ class _ShowCollapsibleBannerAdState extends State<ShowCollapsibleBannerAd> {
         listener: BannerAdListener(
           onAdLoaded: (Ad ad) {
             AdStats.instance.bannerLoad.value++;
+            initialLoadDone = true;
             if (!mounted) {
               // Widget left the screen before the ad arrived: release it.
               ad.dispose();
@@ -70,6 +75,7 @@ class _ShowCollapsibleBannerAdState extends State<ShowCollapsibleBannerAd> {
           },
           onAdFailedToLoad: (Ad ad, LoadAdError error) {
             AdStats.instance.bannerFailed.value++;
+            if (initialLoadDone) return; // failed refresh: keep showing the current creative
             ad.dispose();
           },
         ),

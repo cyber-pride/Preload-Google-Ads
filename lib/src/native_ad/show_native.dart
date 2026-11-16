@@ -26,12 +26,16 @@ class _ShowNativeState extends State<ShowNative> {
     final isSmall = widget.nativeADType == NativeADType.small;
     final loader = isSmall ? LoadSmallNative.instance : LoadMediumNative.instance;
 
-    if (loader.counter >= getNativeCounter) {
+    final countReached =
+        loader.counter >= getNativeCounter || loader.isFirstAdPending;
+    if (countReached && loader.hasTimeGapPassed) {
       loader.resetCounter();
       _showAd = shouldShowNativeAd;
     } else {
       loader.incrementCounter();
       _showAd = false;
+      // Preload for the next placement only once that one can show an ad.
+      loader.autoLoadIfDue();
     }
   }
 

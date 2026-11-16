@@ -290,7 +290,11 @@ class AdManager {
   void reloadUnloadedAds() {
     if (!shouldShowAd || !canRequestAds || !_sdkStarted) return;
     for (final loader in _loaders) {
-      if (loader.isAutoPreload && loader.isEnabled && !loader.hasReadyAd) {
+      // isLoadDue: counter-gated formats wait until the next trigger can show.
+      if (loader.isAutoPreload &&
+          loader.isEnabled &&
+          loader.isLoadDue &&
+          !loader.hasReadyAd) {
         loader.load();
       }
     }

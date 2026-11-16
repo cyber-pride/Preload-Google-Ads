@@ -22,6 +22,12 @@ class InterAd extends BaseAdLoader {
   @override
   bool get isAutoPreload => autoPreloadInterAd;
 
+  @override
+  int get counterLimit => getInterCounter;
+
+  @override
+  int get minSecondsBetweenAds => getInterSeconds;
+
   /// The interstitial ad object.
   InterstitialAd? _interstitialAd;
 
@@ -72,7 +78,11 @@ class InterAd extends BaseAdLoader {
     required Function({InterstitialAd? ad, AdError? error}) callBack,
   }) {
     incrementCounter();
-    if (counter < getInterCounter) {
+    // Show only when the count is reached AND the time gap since the last ad
+    // has passed. Until then the count is kept (not reset).
+    if ((counter < getInterCounter && !isFirstAdPending) || !hasTimeGapPassed) {
+      // Load only when the next trigger can show the ad.
+      autoLoadIfDue();
       // Counter limit not reached yet. Do NOT waste ad request or show.
       callBack();
       return false;
@@ -83,7 +93,7 @@ class InterAd extends BaseAdLoader {
       if (isExpired) {
         AppLogger.warn('Interstitial ad expired. Fetching fresh ad.');
         discardAd();
-        if (isAutoPreload) load();
+        autoLoadIfDue();
         callBack();
         return false;
       }
@@ -103,7 +113,7 @@ class InterAd extends BaseAdLoader {
             ad.dispose();
             _interstitialAd = null;
             state = AdLoadState.initial;
-            if (isAutoPreload) load();
+            autoLoadIfDue();
           },
 
           /// Called when an impression of the ad is recorded.
@@ -119,7 +129,7 @@ class InterAd extends BaseAdLoader {
             ad.dispose();
             _interstitialAd = null;
             state = AdLoadState.failed;
-            if (isAutoPreload) load();
+            autoLoadIfDue();
           },
         )
         ..show();

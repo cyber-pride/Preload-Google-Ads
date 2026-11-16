@@ -237,24 +237,61 @@ class AdIDS {
 
 /// Controls the display frequency of ads using counters.
 class AdCounter {
+  /// Whether the first trigger of each format shows an ad right away.
+  ///
+  /// When true, the first interstitial / rewarded / rewarded interstitial call
+  /// and the first native placement show an ad (if one is ready), and the
+  /// counter starts after that. When false (default), the counter runs first:
+  /// with `interstitialCounter: 3` the first ad appears on the 3rd call.
+  final bool? showAdFirst;
+
   /// Number of times to show interstitial ads.
   final int? interstitialCounter;
+
+  /// Minimum seconds between two interstitial ads, checked together with
+  /// [interstitialCounter]: when the count is reached but fewer seconds have passed
+  /// since the last interstitial ad, no ad shows and the count is kept, so the
+  /// first trigger after the time has passed shows it. 0 or null = no limit.
+  final int? interstitialSeconds;
 
   /// Number of times to show rewarded ads.
   final int? rewardedCounter;
 
+  /// Minimum seconds between two rewarded ads, checked together with
+  /// [rewardedCounter]: when the count is reached but fewer seconds have passed
+  /// since the last rewarded ad, no ad shows and the count is kept, so the
+  /// first trigger after the time has passed shows it. 0 or null = no limit.
+  final int? rewardedSeconds;
+
   /// Number of times to show rewarded interstitial ads.
   final int? rewardedInterstitialCounter;
+
+  /// Minimum seconds between two rewarded interstitial ads, checked together with
+  /// [rewardedInterstitialCounter]: when the count is reached but fewer seconds have passed
+  /// since the last rewarded interstitial ad, no ad shows and the count is kept, so the
+  /// first trigger after the time has passed shows it. 0 or null = no limit.
+  final int? rewardedInterstitialSeconds;
 
   /// Number of times to show native ads.
   final int? nativeCounter;
 
+  /// Minimum seconds between two native ads, checked together with
+  /// [nativeCounter]: when the count is reached but fewer seconds have passed
+  /// since the last native ad, no ad shows and the count is kept, so the
+  /// first trigger after the time has passed shows it. 0 or null = no limit.
+  final int? nativeSeconds;
+
   /// Constructor for [AdCounter].
   AdCounter({
+    this.showAdFirst,
     this.interstitialCounter,
+    this.interstitialSeconds,
     this.rewardedCounter,
+    this.rewardedSeconds,
     this.rewardedInterstitialCounter,
+    this.rewardedInterstitialSeconds,
     this.nativeCounter,
+    this.nativeSeconds,
   });
 }
 

@@ -22,6 +22,12 @@ class RewardAd extends BaseAdLoader {
   @override
   bool get isAutoPreload => autoPreloadRewardedAd;
 
+  @override
+  int get counterLimit => getRewardedCounter;
+
+  @override
+  int get minSecondsBetweenAds => getRewardedSeconds;
+
   RewardedAd? _rewardedAd; // Stores the loaded rewarded ad.
 
   /// Loads a rewarded ad with the given unit ID and configuration.
@@ -66,7 +72,11 @@ class RewardAd extends BaseAdLoader {
     required Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {
     incrementCounter();
-    if (counter < getRewardedCounter) {
+    // Show only when the count is reached AND the time gap since the last ad
+    // has passed. Until then the count is kept (not reset).
+    if ((counter < getRewardedCounter && !isFirstAdPending) || !hasTimeGapPassed) {
+      // Load only when the next trigger can show the ad.
+      autoLoadIfDue();
       callBack();
       return false;
     }
@@ -76,7 +86,7 @@ class RewardAd extends BaseAdLoader {
       if (isExpired) {
         AppLogger.warn('Rewarded ad expired. Fetching fresh ad.');
         discardAd();
-        if (isAutoPreload) load();
+        autoLoadIfDue();
         callBack();
         return false;
       }
@@ -94,7 +104,7 @@ class RewardAd extends BaseAdLoader {
           ad.dispose();
           _rewardedAd = null;
           state = AdLoadState.initial;
-          if (isAutoPreload) load(); // Reload ad after dismissal.
+          autoLoadIfDue(); // Reload ad after dismissal.
         },
         // Called when the ad is shown (impression).
         onAdImpression: (ad) {
@@ -108,7 +118,7 @@ class RewardAd extends BaseAdLoader {
           _rewardedAd = null;
           ad.dispose();
           state = AdLoadState.failed;
-          if (isAutoPreload) load(); // Reload ad after failure.
+          autoLoadIfDue(); // Reload ad after failure.
         },
       );
 

@@ -20,6 +20,12 @@ class RewardInterAd extends BaseAdLoader {
   @override
   bool get isAutoPreload => autoPreloadRewardedInterAd;
 
+  @override
+  int get counterLimit => getRewardedInterCounter;
+
+  @override
+  int get minSecondsBetweenAds => getRewardedInterSeconds;
+
   /// Stores the loaded rewarded interstitial ad.
   RewardedInterstitialAd? _rewardedInterstitialAd;
 
@@ -63,7 +69,11 @@ class RewardInterAd extends BaseAdLoader {
     required Function(AdWithoutView ad, RewardItem reward) onReward,
   }) {
     incrementCounter();
-    if (counter < getRewardedInterCounter) {
+    // Show only when the count is reached AND the time gap since the last ad
+    // has passed. Until then the count is kept (not reset).
+    if ((counter < getRewardedInterCounter && !isFirstAdPending) || !hasTimeGapPassed) {
+      // Load only when the next trigger can show the ad.
+      autoLoadIfDue();
       callBack();
       return false;
     }
@@ -73,7 +83,7 @@ class RewardInterAd extends BaseAdLoader {
       if (isExpired) {
         AppLogger.warn('Rewarded Interstitial ad expired. Fetching fresh ad.');
         discardAd();
-        if (isAutoPreload) load();
+        autoLoadIfDue();
         callBack();
         return false;
       }
@@ -91,7 +101,7 @@ class RewardInterAd extends BaseAdLoader {
           ad.dispose();
           _rewardedInterstitialAd = null;
           state = AdLoadState.initial;
-          if (isAutoPreload) load();
+          autoLoadIfDue();
         },
         onAdImpression: (ad) {
           AdStats.instance.rewardedInterImp.value++;
@@ -103,7 +113,7 @@ class RewardInterAd extends BaseAdLoader {
           _rewardedInterstitialAd = null;
           ad.dispose();
           state = AdLoadState.failed;
-          if (isAutoPreload) load();
+          autoLoadIfDue();
         },
       );
 

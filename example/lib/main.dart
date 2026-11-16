@@ -24,7 +24,9 @@ void main() async {
         appOpen: PreloadMode.manual,
       ),**/
       adCounter: AdCounter(
-        interstitialCounter: 0,
+        showAdFirst: true,
+        interstitialCounter: 3,
+        interstitialSeconds: 10,
         rewardedCounter: 0,
       ),
       nativeADLayout: NativeADLayout(
@@ -187,7 +189,7 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
         ),
 
         // Global Draggable Floating Metrics Overlay
-        PreloadGoogleAds.instance.showAdCounter(),
+        PreloadGoogleAds.instance.showAdCounter(showCounter: true),
       ],
     );
   }
