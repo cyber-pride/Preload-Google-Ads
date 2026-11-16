@@ -29,10 +29,12 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
       if (size == null) {
         final view = PlatformDispatcher.instance.implicitView;
         if (view == null) return;
-        final double logicalScreenWidth = view.physicalSize.width / view.devicePixelRatio;
+        final double logicalScreenWidth =
+            view.physicalSize.width / view.devicePixelRatio;
         if (logicalScreenWidth <= 0) return;
 
-        size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(logicalScreenWidth.toInt());
+        size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(
+            logicalScreenWidth.toInt());
       }
 
       if (size == null) return;
@@ -61,7 +63,8 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
           onAdImpression: (ad) => AdStats.instance.bannerImp.value++,
           onAdFailedToLoad: (Ad ad, LoadAdError error) {
             AdStats.instance.bannerFailed.value++;
-            if (initialLoadDone) return; // failed refresh: keep showing the current creative
+            if (initialLoadDone)
+              return; // failed refresh: keep showing the current creative
             ad.dispose();
           },
         ),
@@ -96,18 +99,18 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
           : bannerLayout?.lightDecoration;
 
       return Container(
-        width: double.infinity,
-        decoration: decoration,
-        margin: bannerLayout?.margin,
-        padding: bannerLayout?.padding,
-        alignment: Alignment.center,
-        child: SizedBox(
-          width: (banner!.size.width > 0) ? banner!.size.width.toDouble() : double.infinity,
-          height: targetHeight,
-
-          child: AdWidget(ad: banner!),
-        )
-      );
+          width: double.infinity,
+          decoration: decoration,
+          margin: bannerLayout?.margin,
+          padding: bannerLayout?.padding,
+          alignment: Alignment.center,
+          child: SizedBox(
+            width: (banner!.size.width > 0)
+                ? banner!.size.width.toDouble()
+                : double.infinity,
+            height: targetHeight,
+            child: AdWidget(ad: banner!),
+          ));
     } catch (e) {
       return const SizedBox.shrink();
     }

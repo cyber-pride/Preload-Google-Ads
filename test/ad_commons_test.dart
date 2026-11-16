@@ -24,7 +24,8 @@ void main() {
       expect(config.adIDs?.nativeId, equals('test_native'));
       expect(config.adIDs?.interstitialId, equals('test_interstitial'));
       expect(config.adIDs?.rewardedId, equals('test_rewarded'));
-      expect(config.adIDs?.rewardedInterstitialId, equals('test_rewarded_interstitial'));
+      expect(config.adIDs?.rewardedInterstitialId,
+          equals('test_rewarded_interstitial'));
       expect(config.themeMode, equals(AdThemeMode.dark));
     });
 

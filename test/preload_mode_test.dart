@@ -64,10 +64,12 @@ void main() {
 
     test('per-format modes merge onto the current config', () async {
       final first = await setConfigData(
-        AdConfigData(preloadConfig: const AdPreloadConfig(rewarded: PreloadMode.manual)),
+        AdConfigData(
+            preloadConfig: const AdPreloadConfig(rewarded: PreloadMode.manual)),
       );
       final second = await setConfigData(
-        AdConfigData(preloadConfig: const AdPreloadConfig(native: PreloadMode.manual)),
+        AdConfigData(
+            preloadConfig: const AdPreloadConfig(native: PreloadMode.manual)),
         base: first,
       );
       expect(second.preloadConfig?.rewarded, PreloadMode.manual);
@@ -81,7 +83,8 @@ void main() {
   });
 
   group('Manual mode never requests ads on its own', () {
-    test('reloadUnloadedAds (startup / network back) skips manual formats', () async {
+    test('reloadUnloadedAds (startup / network back) skips manual formats',
+        () async {
       await useConfig(manual);
       AdManager.instance.reloadUnloadedAds();
       for (final l in loaders) {
@@ -92,12 +95,14 @@ void main() {
     test('show call with no ad ready does not start a load', () async {
       await useConfig(manual);
       var called = false;
-      final shown = InterAd.instance.showInter(callBack: ({ad, error}) => called = true);
+      final shown =
+          InterAd.instance.showInter(callBack: ({ad, error}) => called = true);
       expect(shown, isFalse);
       expect(called, isTrue);
       expect(InterAd.instance.state, AdLoadState.initial);
 
-      RewardAd.instance.showRewarded(callBack: ({ad, error}) {}, onReward: (_, __) {});
+      RewardAd.instance
+          .showRewarded(callBack: ({ad, error}) {}, onReward: (_, __) {});
       expect(RewardAd.instance.state, AdLoadState.initial);
 
       AppOpenAdManager.instance.showAdIfAvailable();
@@ -150,7 +155,8 @@ void main() {
       final loader = RewardAd.instance;
       loader.state = AdLoadState.loading; // a request is already in flight
       final result = loader.preload();
-      expect(loader.state, AdLoadState.loading, reason: 'No duplicate request.');
+      expect(loader.state, AdLoadState.loading,
+          reason: 'No duplicate request.');
       loader.handleLoadSuccess();
       expect(await result, isTrue);
     });
@@ -178,7 +184,10 @@ void main() {
       loader.ads.add(fakeNative());
       loader.state = AdLoadState.ready;
       loader.loadTime = DateTime.now();
-      expect(await PreloadGoogleAds.instance.preloadNativeAd(nativeADType: NativeADType.small), isTrue);
+      expect(
+          await PreloadGoogleAds.instance
+              .preloadNativeAd(nativeADType: NativeADType.small),
+          isTrue);
       loader.ads.clear();
     });
   });

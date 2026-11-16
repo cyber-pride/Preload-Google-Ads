@@ -15,9 +15,7 @@ class _FormatLabScreenState extends State<FormatLabScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Ad Format Test Lab"),
-      ),
+      appBar: AppBar(title: const Text("Ad Format Test Lab")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -155,7 +153,9 @@ class _FormatLabScreenState extends State<FormatLabScreen> {
     PreloadGoogleAds.instance.showRewardedInterstitialAd(
       callBack: (ad, error) {
         if (error != null) {
-          _showSnackBar("Failed to show Rewarded Interstitial: ${error.message}");
+          _showSnackBar(
+            "Failed to show Rewarded Interstitial: ${error.message}",
+          );
         }
       },
       onReward: (ad, reward) {

@@ -22,7 +22,8 @@ void main() {
 
       expect(loader.prepareLoad(), isTrue);
       expect(loader.state, AdLoadState.loading);
-      expect(loader.prepareLoad(), isFalse, reason: 'Duplicate load requests while loading must be ignored.');
+      expect(loader.prepareLoad(), isFalse,
+          reason: 'Duplicate load requests while loading must be ignored.');
     });
 
     test('InterAd handleLoadSuccess updates state to ready', () {

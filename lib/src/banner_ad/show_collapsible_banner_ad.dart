@@ -12,7 +12,8 @@ class ShowCollapsibleBannerAd extends StatefulWidget {
   });
 
   @override
-  State<ShowCollapsibleBannerAd> createState() => _ShowCollapsibleBannerAdState();
+  State<ShowCollapsibleBannerAd> createState() =>
+      _ShowCollapsibleBannerAdState();
 }
 
 class _ShowCollapsibleBannerAdState extends State<ShowCollapsibleBannerAd> {
@@ -30,7 +31,8 @@ class _ShowCollapsibleBannerAdState extends State<ShowCollapsibleBannerAd> {
     try {
       final view = PlatformDispatcher.instance.implicitView;
       if (view == null) return;
-      final double logicalScreenWidth = view.physicalSize.width / view.devicePixelRatio;
+      final double logicalScreenWidth =
+          view.physicalSize.width / view.devicePixelRatio;
       if (logicalScreenWidth <= 0) return;
 
       final AnchoredAdaptiveBannerAdSize? size =
@@ -45,7 +47,8 @@ class _ShowCollapsibleBannerAdState extends State<ShowCollapsibleBannerAd> {
       final AdRequest request = AdRequest(
         extras: <String, String>{
           'collapsible': positionString,
-          'collapsible_request_id': DateTime.now().millisecondsSinceEpoch.toString(),
+          'collapsible_request_id':
+              DateTime.now().millisecondsSinceEpoch.toString(),
         },
       );
 
@@ -75,7 +78,8 @@ class _ShowCollapsibleBannerAdState extends State<ShowCollapsibleBannerAd> {
           },
           onAdFailedToLoad: (Ad ad, LoadAdError error) {
             AdStats.instance.bannerFailed.value++;
-            if (initialLoadDone) return; // failed refresh: keep showing the current creative
+            if (initialLoadDone)
+              return; // failed refresh: keep showing the current creative
             ad.dispose();
           },
         ),
@@ -117,7 +121,9 @@ class _ShowCollapsibleBannerAdState extends State<ShowCollapsibleBannerAd> {
         child: FittedBox(
           fit: BoxFit.contain,
           child: SizedBox(
-            width: banner!.size.width > 0 ? banner!.size.width.toDouble() : double.infinity,
+            width: banner!.size.width > 0
+                ? banner!.size.width.toDouble()
+                : double.infinity,
             height: targetHeight,
             child: AdWidget(ad: banner!),
           ),

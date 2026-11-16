@@ -44,7 +44,8 @@ class AdRepoImpl extends AdRepo {
   /// Displays a collapsible banner ad ([CollapsibleBannerPosition.bottom] or [CollapsibleBannerPosition.top]).
   @override
   Widget showCollapsibleBannerAd({
-    CollapsibleBannerPosition collapsiblePosition = CollapsibleBannerPosition.bottom,
+    CollapsibleBannerPosition collapsiblePosition =
+        CollapsibleBannerPosition.bottom,
   }) {
     return ShowCollapsibleBannerAd(collapsiblePosition: collapsiblePosition);
   }

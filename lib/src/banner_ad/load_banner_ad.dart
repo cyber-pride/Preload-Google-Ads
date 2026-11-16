@@ -92,7 +92,8 @@ class LoadBannerAd extends BaseAdLoader {
           ? AdRequest(
               extras: <String, String>{
                 'collapsible': isCollapsible,
-                'collapsible_request_id': DateTime.now().millisecondsSinceEpoch.toString(),
+                'collapsible_request_id':
+                    DateTime.now().millisecondsSinceEpoch.toString(),
               },
             )
           : const AdRequest();
@@ -138,7 +139,8 @@ class LoadBannerAd extends BaseAdLoader {
               return;
             }
             ad.dispose();
-            handleFailureAndRetry(error, onRetry: () => loadAd(isCollapsible: isCollapsible));
+            handleFailureAndRetry(error,
+                onRetry: () => loadAd(isCollapsible: isCollapsible));
           },
         ),
       );
@@ -149,7 +151,8 @@ class LoadBannerAd extends BaseAdLoader {
       // Catch and log any errors that occur during ad loading.
       state = AdLoadState.failed;
       AppLogger.error("catch error loading banner: $error");
-      handleFailureAndRetry(error, onRetry: () => loadAd(isCollapsible: isCollapsible));
+      handleFailureAndRetry(error,
+          onRetry: () => loadAd(isCollapsible: isCollapsible));
     }
   }
 

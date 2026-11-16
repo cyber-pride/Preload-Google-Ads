@@ -78,8 +78,7 @@ void main() {
 
     for (var i = 0; i < 4; i++) {
       var called = false;
-      final shown =
-          inter.showInter(callBack: ({ad, error}) => called = true);
+      final shown = inter.showInter(callBack: ({ad, error}) => called = true);
       expect(shown, isFalse);
       expect(called, isTrue);
     }
@@ -93,7 +92,8 @@ void main() {
 
   test('first ad has no previous ad, so the gap does not block it', () async {
     await useConfig(AdConfigData(
-      adCounter: AdCounter(showAdFirst: true, interstitialSeconds: 120),
+      adCounter:
+          AdCounter(interstitialShowAdFirst: true, interstitialSeconds: 120),
     ));
     expect(InterAd.instance.hasTimeGapPassed, isTrue);
   });
@@ -107,7 +107,11 @@ void main() {
         rewardedInterstitialSeconds: 60,
       ),
     ));
-    for (final l in [InterAd.instance, RewardAd.instance, RewardInterAd.instance]) {
+    for (final l in [
+      InterAd.instance,
+      RewardAd.instance,
+      RewardInterAd.instance
+    ]) {
       l.lastAdShownTime = secondsAgo(45);
     }
     expect(InterAd.instance.hasTimeGapPassed, isFalse);

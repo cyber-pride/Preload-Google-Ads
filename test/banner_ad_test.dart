@@ -22,7 +22,8 @@ void main() {
 
       loader.reset();
       await Future.delayed(const Duration(milliseconds: 120));
-      expect(timerFired, isFalse, reason: 'Reload timers must be cancelled on reset.');
+      expect(timerFired, isFalse,
+          reason: 'Reload timers must be cancelled on reset.');
     });
 
     test('ShowBannerAd and ShowCollapsibleBannerAd widget constructors', () {
@@ -32,12 +33,14 @@ void main() {
       const widgetCollapsibleBottom = ShowCollapsibleBannerAd(
         collapsiblePosition: CollapsibleBannerPosition.bottom,
       );
-      expect(widgetCollapsibleBottom.collapsiblePosition, equals(CollapsibleBannerPosition.bottom));
+      expect(widgetCollapsibleBottom.collapsiblePosition,
+          equals(CollapsibleBannerPosition.bottom));
 
       const widgetCollapsibleTop = ShowCollapsibleBannerAd(
         collapsiblePosition: CollapsibleBannerPosition.top,
       );
-      expect(widgetCollapsibleTop.collapsiblePosition, equals(CollapsibleBannerPosition.top));
+      expect(widgetCollapsibleTop.collapsiblePosition,
+          equals(CollapsibleBannerPosition.top));
     });
 
     test('BannerADLayout accepts custom adSize property', () {

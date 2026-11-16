@@ -24,9 +24,10 @@ class AppDrawer extends StatelessWidget {
           DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: isDark
-                    ? [const Color(0xFF312E81), const Color(0xFF1E1B4B)]
-                    : [const Color(0xFF6366F1), const Color(0xFF4F46E5)],
+                colors:
+                    isDark
+                        ? [const Color(0xFF312E81), const Color(0xFF1E1B4B)]
+                        : [const Color(0xFF6366F1), const Color(0xFF4F46E5)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -61,10 +62,7 @@ class AppDrawer extends StatelessWidget {
                       ),
                       Text(
                         "Showcase Studio",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
                   ),
@@ -123,7 +121,9 @@ class AppDrawer extends StatelessWidget {
               isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
               color: isDark ? Colors.amber : Colors.indigo,
             ),
-            title: Text(isDark ? "Switch to Light Mode" : "Switch to Dark Mode"),
+            title: Text(
+              isDark ? "Switch to Light Mode" : "Switch to Dark Mode",
+            ),
             onTap: () {
               themeProvider.toggleTheme();
             },

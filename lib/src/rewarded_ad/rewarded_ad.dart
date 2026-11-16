@@ -28,6 +28,9 @@ class RewardAd extends BaseAdLoader {
   @override
   int get minSecondsBetweenAds => getRewardedSeconds;
 
+  @override
+  bool get showAdFirst => getRewardedShowAdFirst;
+
   RewardedAd? _rewardedAd; // Stores the loaded rewarded ad.
 
   /// Loads a rewarded ad with the given unit ID and configuration.
@@ -74,7 +77,8 @@ class RewardAd extends BaseAdLoader {
     incrementCounter();
     // Show only when the count is reached AND the time gap since the last ad
     // has passed. Until then the count is kept (not reset).
-    if ((counter < getRewardedCounter && !isFirstAdPending) || !hasTimeGapPassed) {
+    if ((counter < getRewardedCounter && !isFirstAdPending) ||
+        !hasTimeGapPassed) {
       // Load only when the next trigger can show the ad.
       autoLoadIfDue();
       callBack();
@@ -113,7 +117,9 @@ class RewardAd extends BaseAdLoader {
         // Called if the ad fails to show.
         onAdFailedToShowFullScreenContent: (ad, error) {
           FullScreenAdGuard.onDismissed();
-          callBack(ad: ad as RewardedAd?, error: error); // Callback on failure to show.
+          callBack(
+              ad: ad as RewardedAd?,
+              error: error); // Callback on failure to show.
           AppLogger.error('$ad failed to show: $error');
           _rewardedAd = null;
           ad.dispose();

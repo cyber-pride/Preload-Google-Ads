@@ -14,7 +14,8 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   void toggleTheme() {
-    _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    _themeMode =
+        _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
     _syncAdThemeMode();
     notifyListeners();
   }
@@ -26,9 +27,12 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   void _syncAdThemeMode() {
-    final adMode = _themeMode == ThemeMode.dark
-        ? AdThemeMode.dark
-        : (_themeMode == ThemeMode.light ? AdThemeMode.light : AdThemeMode.system);
+    final adMode =
+        _themeMode == ThemeMode.dark
+            ? AdThemeMode.dark
+            : (_themeMode == ThemeMode.light
+                ? AdThemeMode.light
+                : AdThemeMode.system);
     PreloadGoogleAds.instance.setThemeMode(adMode);
   }
 }

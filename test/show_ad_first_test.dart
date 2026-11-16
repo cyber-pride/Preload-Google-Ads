@@ -38,12 +38,17 @@ void main() {
     await useConfig(AdConfigData());
   });
 
-  test('showAdFirst defaults to false and survives a config merge', () async {
+  test('…ShowAdFirst defaults to false and survives a config merge', () async {
     await useConfig(AdConfigData());
-    expect(getShowAdFirst, isFalse);
+    expect(getInterShowAdFirst, isFalse);
+    expect(getRewardedShowAdFirst, isFalse);
+    expect(getRewardedInterShowAdFirst, isFalse);
+    expect(getNativeShowAdFirst, isFalse);
 
-    await useConfig(AdConfigData(adCounter: AdCounter(showAdFirst: true)));
-    expect(getShowAdFirst, isTrue);
+    await useConfig(
+        AdConfigData(adCounter: AdCounter(interstitialShowAdFirst: true)));
+    expect(getInterShowAdFirst, isTrue);
+    expect(getRewardedShowAdFirst, isFalse);
     // Leaving the counter numbers out keeps their defaults.
     expect(getInterCounter, 3);
   });
@@ -63,7 +68,8 @@ void main() {
   test('true: first trigger is allowed to show, then the counter takes over',
       () async {
     await useConfig(AdConfigData(
-      adCounter: AdCounter(interstitialCounter: 3, showAdFirst: true),
+      adCounter:
+          AdCounter(interstitialShowAdFirst: true, interstitialCounter: 3),
     ));
     final loader = InterAd.instance;
     expect(loader.isFirstAdPending, isTrue);
@@ -80,8 +86,27 @@ void main() {
     expect(loader.counter, 1);
   });
 
+  test('each format has its own setting', () async {
+    await useConfig(AdConfigData(
+      adCounter: AdCounter(
+        rewardedShowAdFirst: true,
+        nativeShowAdFirst: true,
+      ),
+    ));
+    expect(InterAd.instance.isFirstAdPending, isFalse);
+    expect(RewardAd.instance.isFirstAdPending, isTrue);
+    expect(RewardInterAd.instance.isFirstAdPending, isFalse);
+    expect(LoadSmallNative.instance.isFirstAdPending, isTrue);
+  });
+
   test('each full-screen format tracks its own first ad', () async {
-    await useConfig(AdConfigData(adCounter: AdCounter(showAdFirst: true)));
+    await useConfig(AdConfigData(
+      adCounter: AdCounter(
+        interstitialShowAdFirst: true,
+        rewardedShowAdFirst: true,
+        rewardedInterstitialShowAdFirst: true,
+      ),
+    ));
     InterAd.instance.resetCounter();
     expect(InterAd.instance.isFirstAdPending, isFalse);
     expect(RewardAd.instance.isFirstAdPending, isTrue);
@@ -104,10 +129,10 @@ void main() {
     expect(loader.hasShownFirstAd, isFalse);
   });
 
-  testWidgets('native, showAdFirst: first placement shows, then counts',
+  testWidgets('native, nativeShowAdFirst: first placement shows, then counts',
       (tester) async {
     await useConfig(AdConfigData(
-      adCounter: AdCounter(nativeCounter: 2, showAdFirst: true),
+      adCounter: AdCounter(nativeShowAdFirst: true, nativeCounter: 2),
     ));
     final loader = LoadSmallNative.instance;
 

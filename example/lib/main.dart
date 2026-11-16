@@ -14,7 +14,8 @@ void main() async {
 
   // Initialize Preload Google Ads SDK with Light & Dark mode styling configuration
   await PreloadGoogleAds.instance.initialize(
-    adConfigData: AdConfigData(/**
+    adConfigData: AdConfigData(
+      /**
       preloadConfig: AdPreloadConfig(
         interstitial: PreloadMode.manual,
         rewarded: PreloadMode.manual,
@@ -24,7 +25,7 @@ void main() async {
         appOpen: PreloadMode.manual,
       ),**/
       adCounter: AdCounter(
-        showAdFirst: true,
+        interstitialShowAdFirst: true,
         interstitialCounter: 3,
         interstitialSeconds: 10,
         rewardedCounter: 0,
@@ -106,7 +107,8 @@ class MainNavigationContainer extends StatefulWidget {
   const MainNavigationContainer({super.key, required this.themeProvider});
 
   @override
-  State<MainNavigationContainer> createState() => _MainNavigationContainerState();
+  State<MainNavigationContainer> createState() =>
+      _MainNavigationContainerState();
 }
 
 class _MainNavigationContainerState extends State<MainNavigationContainer> {
@@ -130,9 +132,9 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
   Widget build(BuildContext context) {
     final List<Widget Function()> builders = [
       () => HomeDashboardScreen(
-            onNavigate: _selectScreen,
-            themeProvider: widget.themeProvider,
-          ),
+        onNavigate: _selectScreen,
+        themeProvider: widget.themeProvider,
+      ),
       () => CustomStyleScreen(themeProvider: widget.themeProvider),
       () => const NativeListScreen(),
       () => BannerAdScreen(themeProvider: widget.themeProvider),
@@ -151,10 +153,7 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
             onSelectScreen: _selectScreen,
             themeProvider: widget.themeProvider,
           ),
-          body: IndexedStack(
-            index: _currentIndex,
-            children: screens,
-          ),
+          body: IndexedStack(index: _currentIndex, children: screens),
           bottomNavigationBar: NavigationBar(
             selectedIndex: _currentIndex,
             onDestinationSelected: _selectScreen,

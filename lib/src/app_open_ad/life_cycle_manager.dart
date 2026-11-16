@@ -46,7 +46,8 @@ class AppLifecycleReactor {
   void listenToAppStateChanges() {
     if (_subscription != null) return;
     AppStateEventNotifier.startListening();
-    _subscription = AppStateEventNotifier.appStateStream.listen(_onAppStateChanged);
+    _subscription =
+        AppStateEventNotifier.appStateStream.listen(_onAppStateChanged);
   }
 
   /// Stops listening for app state changes.

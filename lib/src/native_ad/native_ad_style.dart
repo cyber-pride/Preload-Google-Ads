@@ -29,14 +29,15 @@ class NativeADStyle {
   BoxDecoration get decoration => lightDecoration;
 
   /// The decoration for the native ad container in Dark Mode.
-  BoxDecoration? get darkDecoration =>
-      config.nativeADLayout?.darkDecoration;
+  BoxDecoration? get darkDecoration => config.nativeADLayout?.darkDecoration;
 
   /// The padding for the native ad container.
-  EdgeInsets get padding => config.nativeADLayout?.padding ?? const EdgeInsets.all(5);
+  EdgeInsets get padding =>
+      config.nativeADLayout?.padding ?? const EdgeInsets.all(5);
 
   /// The margin for the native ad container.
-  EdgeInsets get margin => config.nativeADLayout?.margin ?? const EdgeInsets.all(5);
+  EdgeInsets get margin =>
+      config.nativeADLayout?.margin ?? const EdgeInsets.all(5);
 
   /// Dynamically resolves whether Dark Mode is currently active based on AdThemeMode and BuildContext.
   bool isDarkMode({BuildContext? context}) {
@@ -48,7 +49,9 @@ class NativeADStyle {
           Theme.of(context).brightness == Brightness.dark;
     }
     // No context (e.g. during initialize()): fall back to the device setting.
-    return WidgetsFlutterBinding.ensureInitialized().platformDispatcher.platformBrightness ==
+    return WidgetsFlutterBinding.ensureInitialized()
+            .platformDispatcher
+            .platformBrightness ==
         Brightness.dark;
   }
 
@@ -67,7 +70,8 @@ class NativeADStyle {
     if (isDark && config.nativeADLayout?.darkFlutterNativeADStyle != null) {
       return config.nativeADLayout!.darkFlutterNativeADStyle!;
     }
-    return config.nativeADLayout?.flutterNativeADStyle ?? FlutterNativeADStyle();
+    return config.nativeADLayout?.flutterNativeADStyle ??
+        FlutterNativeADStyle();
   }
 
   /// Custom styling settings for native ads (defaults to current active style).
@@ -107,10 +111,12 @@ class NativeADStyle {
   }
 
   /// Legacy getter for medium template style.
-  NativeTemplateStyle? get nativeMediumTemplateStyle => getNativeMediumTemplateStyle();
+  NativeTemplateStyle? get nativeMediumTemplateStyle =>
+      getNativeMediumTemplateStyle();
 
   /// Legacy getter for small template style.
-  NativeTemplateStyle? get nativeSmallTemplateStyle => getNativeSmallTemplateStyle();
+  NativeTemplateStyle? get nativeSmallTemplateStyle =>
+      getNativeSmallTemplateStyle();
 
   /// Returns constraints for medium native ads based on the layout type.
   BoxConstraints get mediumConstraintsSize => isFlutterLayout

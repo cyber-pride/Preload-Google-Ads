@@ -9,7 +9,10 @@ class NativeListScreen extends StatefulWidget {
 }
 
 class _NativeListScreenState extends State<NativeListScreen> {
-  final List<String> _items = List.generate(15, (index) => "Feed Article Item #${index + 1}");
+  final List<String> _items = List.generate(
+    15,
+    (index) => "Feed Article Item #${index + 1}",
+  );
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
 
@@ -27,7 +30,9 @@ class _NativeListScreenState extends State<NativeListScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore) {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore) {
       _loadMoreItems();
     }
   }
@@ -38,7 +43,12 @@ class _NativeListScreenState extends State<NativeListScreen> {
     if (mounted) {
       setState(() {
         final currentLength = _items.length;
-        _items.addAll(List.generate(10, (index) => "Feed Article Item #${currentLength + index + 1}"));
+        _items.addAll(
+          List.generate(
+            10,
+            (index) => "Feed Article Item #${currentLength + index + 1}",
+          ),
+        );
         _isLoadingMore = false;
       });
     }
@@ -55,7 +65,12 @@ class _NativeListScreenState extends State<NativeListScreen> {
             onPressed: () {
               setState(() {
                 _items.clear();
-                _items.addAll(List.generate(15, (index) => "Feed Article Item #${index + 1}"));
+                _items.addAll(
+                  List.generate(
+                    15,
+                    (index) => "Feed Article Item #${index + 1}",
+                  ),
+                );
               });
             },
           ),
@@ -69,9 +84,7 @@ class _NativeListScreenState extends State<NativeListScreen> {
           if (index == _items.length) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: Center(child: CircularProgressIndicator()),
             );
           }
 
@@ -85,7 +98,9 @@ class _NativeListScreenState extends State<NativeListScreen> {
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(12),
                   leading: CircleAvatar(
-                    backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    backgroundColor: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.1),
                     child: Text(
                       "${index + 1}",
                       style: TextStyle(
@@ -100,7 +115,9 @@ class _NativeListScreenState extends State<NativeListScreen> {
                   ),
                   subtitle: const Padding(
                     padding: EdgeInsets.only(top: 4),
-                    child: Text("Discover trending news, insights, and stories curated for you."),
+                    child: Text(
+                      "Discover trending news, insights, and stories curated for you.",
+                    ),
                   ),
                   trailing: const Icon(Icons.chevron_right_rounded),
                 ),
@@ -113,9 +130,10 @@ class _NativeListScreenState extends State<NativeListScreen> {
                       color: Theme.of(context).cardTheme.color,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? const Color(0xFF334155)
-                            : const Color(0xFFE2E8F0),
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFE2E8F0),
                       ),
                     ),
                     padding: const EdgeInsets.all(8),

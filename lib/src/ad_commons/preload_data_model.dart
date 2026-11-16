@@ -84,7 +84,8 @@ class AdPreloadConfig {
   AdPreloadConfig mergeOnto(AdPreloadConfig? base) => AdPreloadConfig(
         interstitial: interstitial ?? base?.interstitial,
         rewarded: rewarded ?? base?.rewarded,
-        rewardedInterstitial: rewardedInterstitial ?? base?.rewardedInterstitial,
+        rewardedInterstitial:
+            rewardedInterstitial ?? base?.rewardedInterstitial,
         native: native ?? base?.native,
         banner: banner ?? base?.banner,
         appOpen: appOpen ?? base?.appOpen,
@@ -237,13 +238,11 @@ class AdIDS {
 
 /// Controls the display frequency of ads using counters.
 class AdCounter {
-  /// Whether the first trigger of each format shows an ad right away.
-  ///
-  /// When true, the first interstitial / rewarded / rewarded interstitial call
-  /// and the first native placement show an ad (if one is ready), and the
-  /// counter starts after that. When false (default), the counter runs first:
-  /// with `interstitialCounter: 3` the first ad appears on the 3rd call.
-  final bool? showAdFirst;
+  /// Whether the first interstitial call shows an ad right away (if one is
+  /// ready), with [interstitialCounter] starting after that. When false
+  /// (default), the counter runs first: with `interstitialCounter: 3` the
+  /// first ad appears on the 3rd call.
+  final bool? interstitialShowAdFirst;
 
   /// Number of times to show interstitial ads.
   final int? interstitialCounter;
@@ -254,6 +253,10 @@ class AdCounter {
   /// first trigger after the time has passed shows it. 0 or null = no limit.
   final int? interstitialSeconds;
 
+  /// Whether the first rewarded call shows an ad right away, with
+  /// [rewardedCounter] starting after that. Default false (counter first).
+  final bool? rewardedShowAdFirst;
+
   /// Number of times to show rewarded ads.
   final int? rewardedCounter;
 
@@ -263,6 +266,11 @@ class AdCounter {
   /// first trigger after the time has passed shows it. 0 or null = no limit.
   final int? rewardedSeconds;
 
+  /// Whether the first rewarded interstitial call shows an ad right away,
+  /// with [rewardedInterstitialCounter] starting after that. Default false
+  /// (counter first).
+  final bool? rewardedInterstitialShowAdFirst;
+
   /// Number of times to show rewarded interstitial ads.
   final int? rewardedInterstitialCounter;
 
@@ -271,6 +279,10 @@ class AdCounter {
   /// since the last rewarded interstitial ad, no ad shows and the count is kept, so the
   /// first trigger after the time has passed shows it. 0 or null = no limit.
   final int? rewardedInterstitialSeconds;
+
+  /// Whether the first native placement shows an ad right away, with
+  /// [nativeCounter] starting after that. Default false (counter first).
+  final bool? nativeShowAdFirst;
 
   /// Number of times to show native ads.
   final int? nativeCounter;
@@ -283,13 +295,16 @@ class AdCounter {
 
   /// Constructor for [AdCounter].
   AdCounter({
-    this.showAdFirst,
+    this.interstitialShowAdFirst,
     this.interstitialCounter,
     this.interstitialSeconds,
+    this.rewardedShowAdFirst,
     this.rewardedCounter,
     this.rewardedSeconds,
+    this.rewardedInterstitialShowAdFirst,
     this.rewardedInterstitialCounter,
     this.rewardedInterstitialSeconds,
+    this.nativeShowAdFirst,
     this.nativeCounter,
     this.nativeSeconds,
   });
@@ -443,18 +458,20 @@ class CustomNativeADStyle {
     BoxConstraints? mediumBoxConstrain,
     BoxConstraints? smallBoxConstrain,
   })  : buttonGradients = buttonGradients ?? [],
-        mediumBoxConstrain = mediumBoxConstrain ?? BoxConstraints(
-          minWidth: 320,
-          minHeight: 210,
-          maxWidth: 400,
-          maxHeight: 265,
-        ),
-        smallBoxConstrain = smallBoxConstrain ?? BoxConstraints(
-          minWidth: 320,
-          minHeight: 57,
-          maxWidth: 400,
-          maxHeight: 135,
-        );
+        mediumBoxConstrain = mediumBoxConstrain ??
+            BoxConstraints(
+              minWidth: 320,
+              minHeight: 210,
+              maxWidth: 400,
+              maxHeight: 265,
+            ),
+        smallBoxConstrain = smallBoxConstrain ??
+            BoxConstraints(
+              minWidth: 320,
+              minHeight: 57,
+              maxWidth: 400,
+              maxHeight: 135,
+            );
 
   /// Factory constructor for Dark Mode presets.
   factory CustomNativeADStyle.dark({
@@ -549,18 +566,20 @@ class FlutterNativeADStyle {
             ),
         mainBackgroundColor = mainBackgroundColor ?? Colors.white,
         cornerRadius = cornerRadius ?? 5.0,
-        mediumBoxConstrain = mediumBoxConstrain ?? BoxConstraints(
-          minWidth: 320,
-          minHeight: 280,
-          maxWidth: 400,
-          maxHeight: 365,
-        ),
-        smallBoxConstrain = smallBoxConstrain ?? BoxConstraints(
-          minWidth: 320,
-          minHeight: 88,
-          maxWidth: 400,
-          maxHeight: 120,
-        );
+        mediumBoxConstrain = mediumBoxConstrain ??
+            BoxConstraints(
+              minWidth: 320,
+              minHeight: 280,
+              maxWidth: 400,
+              maxHeight: 365,
+            ),
+        smallBoxConstrain = smallBoxConstrain ??
+            BoxConstraints(
+              minWidth: 320,
+              minHeight: 88,
+              maxWidth: 400,
+              maxHeight: 120,
+            );
 
   /// Factory constructor for Dark Mode presets.
   factory FlutterNativeADStyle.dark({

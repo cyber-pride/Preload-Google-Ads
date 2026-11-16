@@ -160,7 +160,8 @@ abstract class BaseAdLoader with AdLoaderMixin {
     // Skip when an ad is already in flight, on screen, or cached and ready:
     // a second request would replace (and leak) the cached ad and waste a request.
     if (isLoading || isShowing || isAdLoaded) {
-      AppLogger.log("$adLabel is already ${state.name}. Skipping load request.");
+      AppLogger.log(
+          "$adLabel is already ${state.name}. Skipping load request.");
       return false;
     }
     state = AdLoadState.loading;
@@ -272,7 +273,8 @@ class FullScreenAdGuard {
       return false;
     }
     final last = _lastDismissed;
-    if (last != null && DateTime.now().difference(last) < cooldown) return false;
+    if (last != null && DateTime.now().difference(last) < cooldown)
+      return false;
     return true;
   }
 }
@@ -316,12 +318,17 @@ mixin AdLoaderMixin {
   }
 
   /// Whether this format has shown an ad since app start. Used by
-  /// [AdCounter.showAdFirst]; set by [resetCounter], which runs on each show.
+  /// [AdCounter]'s `…ShowAdFirst`; set by [resetCounter], which runs on each
+  /// show.
   bool hasShownFirstAd = false;
 
-  /// True when [AdCounter.showAdFirst] is on and this format has not shown
-  /// an ad yet, so the next trigger shows one regardless of the counter.
-  bool get isFirstAdPending => getShowAdFirst && !hasShownFirstAd;
+  /// This format's [AdCounter] `…ShowAdFirst` setting. Formats without a
+  /// counter (banner, App Open) keep false.
+  bool get showAdFirst => false;
+
+  /// True when [showAdFirst] is on and this format has not shown an ad yet,
+  /// so the next trigger shows one regardless of the counter.
+  bool get isFirstAdPending => showAdFirst && !hasShownFirstAd;
 
   /// When this format last showed an ad; used for [AdCounter]'s `…Seconds`
   /// time gap. Set by [resetCounter], which runs on each show.

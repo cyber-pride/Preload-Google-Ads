@@ -43,9 +43,10 @@ class HomeDashboardScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: Theme.of(context).brightness == Brightness.dark
-                      ? [const Color(0xFF312E81), const Color(0xFF1E1B4B)]
-                      : [const Color(0xFF6366F1), const Color(0xFF4F46E5)],
+                  colors:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? [const Color(0xFF312E81), const Color(0xFF1E1B4B)]
+                          : [const Color(0xFF6366F1), const Color(0xFF4F46E5)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -55,20 +56,31 @@ class HomeDashboardScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white24,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
                       "v1.0.7 Live Performance Suite",
-                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
                   const Text(
                     "High-Performance Preloaded Ad Engine",
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   const Text(

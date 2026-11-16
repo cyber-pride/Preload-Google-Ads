@@ -92,9 +92,11 @@ void main() {
     expect(InterAd.instance.state, AdLoadState.loading);
   });
 
-  test('showAdFirst preloads at startup for the first trigger', () async {
+  test('interstitialShowAdFirst preloads at startup for the first trigger',
+      () async {
     await useConfig(AdConfigData(
-      adCounter: AdCounter(showAdFirst: true, interstitialCounter: 3),
+      adCounter:
+          AdCounter(interstitialShowAdFirst: true, interstitialCounter: 3),
     ));
     AdManager.instance.reloadUnloadedAds();
     expect(InterAd.instance.state, AdLoadState.loading);
@@ -108,7 +110,8 @@ void main() {
     expect(RewardAd.instance.state, AdLoadState.initial);
     expect(RewardInterAd.instance.state, AdLoadState.initial);
 
-    RewardAd.instance.showRewarded(callBack: ({ad, error}) {}, onReward: (_, __) {});
+    RewardAd.instance
+        .showRewarded(callBack: ({ad, error}) {}, onReward: (_, __) {});
     RewardInterAd.instance
         .showRewardedInter(callBack: ({ad, error}) {}, onReward: (_, __) {});
     expect(RewardAd.instance.state, AdLoadState.initial);

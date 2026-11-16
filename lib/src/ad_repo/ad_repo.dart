@@ -30,7 +30,8 @@ abstract class AdRepo {
 
   /// Displays a collapsible banner ad ([CollapsibleBannerPosition.bottom] or [CollapsibleBannerPosition.top]).
   Widget showCollapsibleBannerAd({
-    CollapsibleBannerPosition collapsiblePosition = CollapsibleBannerPosition.bottom,
+    CollapsibleBannerPosition collapsiblePosition =
+        CollapsibleBannerPosition.bottom,
   });
 
   /// Loads the app open ad.

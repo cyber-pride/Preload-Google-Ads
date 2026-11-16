@@ -5,7 +5,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Google best-practice safeguards', () {
-    test('Retries are capped (5s/10s/20s) and then stop instead of looping', () {
+    test('Retries are capped (5s/10s/20s) and then stop instead of looping',
+        () {
       final loader = InterAd.instance;
       loader.reset();
 
@@ -21,11 +22,15 @@ void main() {
       loader.reset();
     });
 
-    test('Native ads expire after 1 hour; full-screen formats after 4 hours', () {
-      expect(LoadMediumNative.instance.maxCacheDuration, const Duration(hours: 1));
-      expect(LoadSmallNative.instance.maxCacheDuration, const Duration(hours: 1));
+    test('Native ads expire after 1 hour; full-screen formats after 4 hours',
+        () {
+      expect(
+          LoadMediumNative.instance.maxCacheDuration, const Duration(hours: 1));
+      expect(
+          LoadSmallNative.instance.maxCacheDuration, const Duration(hours: 1));
       expect(InterAd.instance.maxCacheDuration, const Duration(hours: 4));
-      expect(AppOpenAdManager.instance.maxCacheDuration, const Duration(hours: 4));
+      expect(
+          AppOpenAdManager.instance.maxCacheDuration, const Duration(hours: 4));
     });
 
     test('App Open is blocked while another full-screen ad is showing', () {
@@ -39,9 +44,13 @@ void main() {
       expect(FullScreenAdGuard.canShowAppOpen(), isFalse);
     });
 
-    test('Release build disables formats with no ad unit ID (no silent test ads)', () async {
+    test(
+        'Release build disables formats with no ad unit ID (no silent test ads)',
+        () async {
       final cfg = await setConfigData(
-        AdConfigData(adIDs: AdIDS(interstitialId: 'ca-app-pub-1111111111111111/2222222222')),
+        AdConfigData(
+            adIDs: AdIDS(
+                interstitialId: 'ca-app-pub-1111111111111111/2222222222')),
         releaseMode: true,
       );
       expect(cfg.adFlag?.showInterstitial, isTrue);
@@ -71,7 +80,8 @@ void main() {
     });
 
     test('Consent settings survive a theme change', () {
-      final cfg = AdConfigData(requireConsent: true).copyWith(themeMode: AdThemeMode.dark);
+      final cfg = AdConfigData(requireConsent: true)
+          .copyWith(themeMode: AdThemeMode.dark);
       expect(cfg.requireConsent, isTrue);
       expect(cfg.themeMode, AdThemeMode.dark);
     });
@@ -79,8 +89,10 @@ void main() {
     test('Custom native ad sizes are honored', () {
       const medium = BoxConstraints(minHeight: 300, maxHeight: 320);
       const small = BoxConstraints(minHeight: 90, maxHeight: 100);
-      final custom = CustomNativeADStyle(mediumBoxConstrain: medium, smallBoxConstrain: small);
-      final flutter = FlutterNativeADStyle(mediumBoxConstrain: medium, smallBoxConstrain: small);
+      final custom = CustomNativeADStyle(
+          mediumBoxConstrain: medium, smallBoxConstrain: small);
+      final flutter = FlutterNativeADStyle(
+          mediumBoxConstrain: medium, smallBoxConstrain: small);
       expect(custom.mediumBoxConstrain, medium);
       expect(custom.smallBoxConstrain, small);
       expect(flutter.mediumBoxConstrain, medium);

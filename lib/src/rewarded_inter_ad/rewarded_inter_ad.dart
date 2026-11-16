@@ -26,6 +26,9 @@ class RewardInterAd extends BaseAdLoader {
   @override
   int get minSecondsBetweenAds => getRewardedInterSeconds;
 
+  @override
+  bool get showAdFirst => getRewardedInterShowAdFirst;
+
   /// Stores the loaded rewarded interstitial ad.
   RewardedInterstitialAd? _rewardedInterstitialAd;
 
@@ -71,14 +74,17 @@ class RewardInterAd extends BaseAdLoader {
     incrementCounter();
     // Show only when the count is reached AND the time gap since the last ad
     // has passed. Until then the count is kept (not reset).
-    if ((counter < getRewardedInterCounter && !isFirstAdPending) || !hasTimeGapPassed) {
+    if ((counter < getRewardedInterCounter && !isFirstAdPending) ||
+        !hasTimeGapPassed) {
       // Load only when the next trigger can show the ad.
       autoLoadIfDue();
       callBack();
       return false;
     }
 
-    if (shouldShowRewardedInterAd && _rewardedInterstitialAd != null && isAdLoaded) {
+    if (shouldShowRewardedInterAd &&
+        _rewardedInterstitialAd != null &&
+        isAdLoaded) {
       // Check if ad expired (AdMob 4-hour TTL rule)
       if (isExpired) {
         AppLogger.warn('Rewarded Interstitial ad expired. Fetching fresh ad.');

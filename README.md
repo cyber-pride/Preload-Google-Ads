@@ -148,7 +148,7 @@ Control specifically which ads to show and how frequently they appear.
 PreloadGoogleAds.instance.initialize(
   adConfigData: AdConfigData(
     adCounter: AdCounter(
-      showAdFirst: true,             // First trigger shows an ad, then the counter starts (default: false)
+      interstitialShowAdFirst: true, // First trigger shows an ad, then the counter starts (default: false)
       interstitialCounter: 3,        // Show every 3rd trigger (default: 3); the ad loads on the 2nd
       interstitialSeconds: 120,      // ...and only if 120s passed since the last interstitial (default: 0 = no limit)
       nativeCounter: 0,              // Show every time

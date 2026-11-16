@@ -20,21 +20,27 @@ void main() {
       AdStats.instance.rewardedImp.value = 0;
     });
 
-    test('Single-Buffer Pool Cap: Native Ad queue allows max 1 preloaded instance', () {
+    test(
+        'Single-Buffer Pool Cap: Native Ad queue allows max 1 preloaded instance',
+        () {
       final nativeLoader = LoadMediumNative.instance;
       nativeLoader.reset();
 
-      expect(nativeLoader.ads.length, 0, reason: 'Initial queue must be empty.');
+      expect(nativeLoader.ads.length, 0,
+          reason: 'Initial queue must be empty.');
 
       // Simulate 1 loaded ad
       nativeLoader.ads.add(FakeNativeAd());
       expect(nativeLoader.ads.length, 1);
 
       // Verify prepareLoad blocks further preloading when 1 ad is already in queue
-      expect(nativeLoader.ads.length >= 1, isTrue, reason: 'Buffer pool is capped at 1 for max match rate.');
+      expect(nativeLoader.ads.length >= 1, isTrue,
+          reason: 'Buffer pool is capped at 1 for max match rate.');
     });
 
-    test('Single-Buffer Pool Cap: Banner Ad queue allows max 1 preloaded instance', () {
+    test(
+        'Single-Buffer Pool Cap: Banner Ad queue allows max 1 preloaded instance',
+        () {
       final bannerLoader = LoadBannerAd.instance;
       bannerLoader.reset();
 
@@ -54,14 +60,20 @@ void main() {
       expect(loader.isExpired, isFalse);
 
       // Simulate load timestamp from 4 hours and 1 minute ago
-      loader.loadTime = DateTime.now().subtract(const Duration(hours: 4, minutes: 1));
-      expect(loader.isExpired, isTrue, reason: 'Ad older than 4 hours must be marked expired to protect show rate.');
+      loader.loadTime =
+          DateTime.now().subtract(const Duration(hours: 4, minutes: 1));
+      expect(loader.isExpired, isTrue,
+          reason:
+              'Ad older than 4 hours must be marked expired to protect show rate.');
     });
 
-    test('Click Counter Gating: Does NOT load or show until click threshold is reached', () {
+    test(
+        'Click Counter Gating: Does NOT load or show until click threshold is reached',
+        () {
       final loader = InterAd.instance;
       loader.reset();
-      loader.state = AdLoadState.loading; // Guard against channel invocation in unit tests
+      loader.state =
+          AdLoadState.loading; // Guard against channel invocation in unit tests
 
       // Initial click 1: limit not reached
       bool callback1Fired = false;
@@ -71,7 +83,9 @@ void main() {
       expect(loader.counter, 1);
     });
 
-    test('Match Rate Calculation: 100% Match Rate ratio when Impressions equal Loads', () {
+    test(
+        'Match Rate Calculation: 100% Match Rate ratio when Impressions equal Loads',
+        () {
       final stats = AdStats.instance;
 
       // Simulate 50 ad requests and 50 impressions
@@ -79,7 +93,9 @@ void main() {
       stats.interImp.value = 50;
 
       final matchRate = (stats.interImp.value / stats.interLoad.value) * 100;
-      expect(matchRate, equals(100.0), reason: 'Match rate is 100% when loads and impressions are identical.');
+      expect(matchRate, equals(100.0),
+          reason:
+              'Match rate is 100% when loads and impressions are identical.');
       expect(matchRate >= 95.0, isTrue);
     });
   });

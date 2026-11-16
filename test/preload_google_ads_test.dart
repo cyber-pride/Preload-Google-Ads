@@ -96,7 +96,8 @@ void main() {
 
       expect(loader.prepareLoad(), isTrue);
       expect(loader.state, AdLoadState.loading);
-      expect(loader.prepareLoad(), isFalse, reason: 'Duplicate load requests while loading must be ignored.');
+      expect(loader.prepareLoad(), isFalse,
+          reason: 'Duplicate load requests while loading must be ignored.');
     });
 
     test('InterAd handleLoadSuccess updates state and retries', () {
@@ -110,7 +111,9 @@ void main() {
       expect(loader.retryAttempts, 3);
     });
 
-    test('InterAd handleFailureAndRetry decrements retry attempts and schedules backoff', () {
+    test(
+        'InterAd handleFailureAndRetry decrements retry attempts and schedules backoff',
+        () {
       final loader = InterAd.instance;
       loader.reset();
 
@@ -179,7 +182,8 @@ void main() {
 
       loader.reset();
       await Future.delayed(const Duration(milliseconds: 120));
-      expect(timerFired, isFalse, reason: 'Pending reload timer must be cancelled on reset.');
+      expect(timerFired, isFalse,
+          reason: 'Pending reload timer must be cancelled on reset.');
     });
 
     test('LoadSmallNative properties and counter tracking', () {
@@ -223,11 +227,15 @@ void main() {
       const widgetStandard = ShowBannerAd();
       expect(widgetStandard, isA<Widget>());
 
-      const widgetCollapsibleBottom = ShowCollapsibleBannerAd(collapsiblePosition: CollapsibleBannerPosition.bottom);
-      expect(widgetCollapsibleBottom.collapsiblePosition, CollapsibleBannerPosition.bottom);
+      const widgetCollapsibleBottom = ShowCollapsibleBannerAd(
+          collapsiblePosition: CollapsibleBannerPosition.bottom);
+      expect(widgetCollapsibleBottom.collapsiblePosition,
+          CollapsibleBannerPosition.bottom);
 
-      const widgetCollapsibleTop = ShowCollapsibleBannerAd(collapsiblePosition: CollapsibleBannerPosition.top);
-      expect(widgetCollapsibleTop.collapsiblePosition, CollapsibleBannerPosition.top);
+      const widgetCollapsibleTop = ShowCollapsibleBannerAd(
+          collapsiblePosition: CollapsibleBannerPosition.top);
+      expect(widgetCollapsibleTop.collapsiblePosition,
+          CollapsibleBannerPosition.top);
     });
   });
 
@@ -296,10 +304,13 @@ void main() {
         nativeADType: NativeADType.medium,
       );
       expect(widget, isA<Widget>());
-      expect((widget as KeyedSubtree).key, equals(const ValueKey("test_preview_key")));
+      expect((widget as KeyedSubtree).key,
+          equals(const ValueKey("test_preview_key")));
     });
 
-    test('CustomNativeADStyle properties initialize properly with custom parameters', () {
+    test(
+        'CustomNativeADStyle properties initialize properly with custom parameters',
+        () {
       final style = CustomNativeADStyle(
         titleColor: const Color(0xFFFF0000),
         bodyColor: const Color(0xFF00FF00),
@@ -344,13 +355,15 @@ void main() {
 
       // Simulate load time 5 hours ago
       loader.loadTime = DateTime.now().subtract(const Duration(hours: 5));
-      expect(loader.isExpired, isTrue, reason: 'Ads older than 4 hours must be marked expired.');
+      expect(loader.isExpired, isTrue,
+          reason: 'Ads older than 4 hours must be marked expired.');
     });
 
     test('InterAd showInter gates ad requests with click counter check', () {
       final loader = InterAd.instance;
       loader.reset();
-      loader.state = AdLoadState.loading; // Prevent channel call during unit test
+      loader.state =
+          AdLoadState.loading; // Prevent channel call during unit test
 
       bool callbackFired = false;
       loader.showInter(callBack: ({ad, error}) {
@@ -361,13 +374,16 @@ void main() {
       expect(loader.counter, 1);
     });
 
-    test('AdStats tracks load vs impression for 1-to-1 match rate verification', () {
+    test('AdStats tracks load vs impression for 1-to-1 match rate verification',
+        () {
       final stats = AdStats.instance;
       stats.interLoad.value = 10;
       stats.interImp.value = 10;
 
       final matchRate = (stats.interImp.value / stats.interLoad.value) * 100;
-      expect(matchRate, equals(100.0), reason: 'Match rate ratio should reach 100% when loads equal impressions.');
+      expect(matchRate, equals(100.0),
+          reason:
+              'Match rate ratio should reach 100% when loads equal impressions.');
     });
   });
 }

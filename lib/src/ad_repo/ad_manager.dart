@@ -142,8 +142,8 @@ class AdManager {
   Future<bool> isPrivacyOptionsRequired() async {
     if (!config.requireConsent) return false;
     try {
-      final status =
-          await ConsentInformation.instance.getPrivacyOptionsRequirementStatus();
+      final status = await ConsentInformation.instance
+          .getPrivacyOptionsRequirementStatus();
       return status == PrivacyOptionsRequirementStatus.required;
     } catch (_) {
       return false;
@@ -193,7 +193,10 @@ class AdManager {
   /// Replaces cached (and in-flight) native ads so the next ones use the
   /// current style.
   void _refreshNativeAds({required bool reload}) {
-    for (final loader in [LoadMediumNative.instance, LoadSmallNative.instance]) {
+    for (final loader in [
+      LoadMediumNative.instance,
+      LoadSmallNative.instance
+    ]) {
       if (loader.ads.isEmpty && !loader.isLoading) continue;
       loader.reset();
       if (reload) {
@@ -209,7 +212,8 @@ class AdManager {
   /// that had an ad are requested again too (see [_reloadAfterInit]).
   void _discardOutdatedAds(AdConfigData before, AdConfigData? update) {
     final now = config;
-    bool changed(String? a, String? b, bool? fa, bool? fb) => a != b || fa != fb;
+    bool changed(String? a, String? b, bool? fa, bool? fb) =>
+        a != b || fa != fb;
     final idsA = before.adIDs, idsB = now.adIDs;
     final flagA = before.adFlag, flagB = now.adFlag;
     final allOff = flagA?.showAd != flagB?.showAd;
@@ -222,20 +226,30 @@ class AdManager {
       if (hadAd && !loader.isAutoPreload) _reloadAfterInit.add(loader);
     }
 
-    discard(InterAd.instance, changed(idsA?.interstitialId, idsB?.interstitialId,
-        flagA?.showInterstitial, flagB?.showInterstitial));
-    discard(RewardAd.instance, changed(idsA?.rewardedId, idsB?.rewardedId,
-        flagA?.showRewarded, flagB?.showRewarded));
-    discard(RewardInterAd.instance, changed(idsA?.rewardedInterstitialId,
-        idsB?.rewardedInterstitialId, flagA?.showRewardedInterstitial,
-        flagB?.showRewardedInterstitial));
-    discard(AppOpenAdManager.instance, changed(idsA?.appOpenId, idsB?.appOpenId,
-        flagA?.showAppOpen, flagB?.showAppOpen));
-    discard(LoadBannerAd.instance, changed(idsA?.bannerId, idsB?.bannerId,
-        flagA?.showBanner, flagB?.showBanner));
+    discard(
+        InterAd.instance,
+        changed(idsA?.interstitialId, idsB?.interstitialId,
+            flagA?.showInterstitial, flagB?.showInterstitial));
+    discard(
+        RewardAd.instance,
+        changed(idsA?.rewardedId, idsB?.rewardedId, flagA?.showRewarded,
+            flagB?.showRewarded));
+    discard(
+        RewardInterAd.instance,
+        changed(idsA?.rewardedInterstitialId, idsB?.rewardedInterstitialId,
+            flagA?.showRewardedInterstitial, flagB?.showRewardedInterstitial));
+    discard(
+        AppOpenAdManager.instance,
+        changed(idsA?.appOpenId, idsB?.appOpenId, flagA?.showAppOpen,
+            flagB?.showAppOpen));
+    discard(
+        LoadBannerAd.instance,
+        changed(idsA?.bannerId, idsB?.bannerId, flagA?.showBanner,
+            flagB?.showBanner));
 
     final nativeOutdated = allOff ||
-        changed(idsA?.nativeId, idsB?.nativeId, flagA?.showNative, flagB?.showNative) ||
+        changed(idsA?.nativeId, idsB?.nativeId, flagA?.showNative,
+            flagB?.showNative) ||
         update?.nativeADLayout != null ||
         before.themeMode != now.themeMode;
     if (nativeOutdated) _refreshNativeAds(reload: false);
@@ -255,7 +269,8 @@ class AdManager {
   }
 
   /// Force reloads native ads (Small or Medium).
-  Future<void> reloadNativeAd({NativeADType? nativeADType, BuildContext? context}) async {
+  Future<void> reloadNativeAd(
+      {NativeADType? nativeADType, BuildContext? context}) async {
     await _syncNativeAdStyle(context: context);
     if (nativeADType == NativeADType.small) {
       LoadSmallNative.instance.reset();
@@ -322,7 +337,8 @@ class AdManager {
   Future<bool> preloadBannerAd() => LoadBannerAd.instance.preload();
 
   /// Preloads a native ad of [nativeADType]. See [BaseAdLoader.preload].
-  Future<bool> preloadNativeAd({NativeADType nativeADType = NativeADType.medium}) =>
+  Future<bool> preloadNativeAd(
+          {NativeADType nativeADType = NativeADType.medium}) =>
       (nativeADType == NativeADType.small
               ? LoadSmallNative.instance
               : LoadMediumNative.instance)
@@ -346,8 +362,11 @@ class AdManager {
   }
 
   /// Shows a collapsible banner ad ([CollapsibleBannerPosition.bottom] or [CollapsibleBannerPosition.top]).
-  Widget showCollapsibleBannerAd({CollapsibleBannerPosition collapsiblePosition = CollapsibleBannerPosition.bottom}) {
-    return PlugAd.getInstance().showCollapsibleBannerAd(collapsiblePosition: collapsiblePosition);
+  Widget showCollapsibleBannerAd(
+      {CollapsibleBannerPosition collapsiblePosition =
+          CollapsibleBannerPosition.bottom}) {
+    return PlugAd.getInstance()
+        .showCollapsibleBannerAd(collapsiblePosition: collapsiblePosition);
   }
 
   /// Displays the ad counter (if available).

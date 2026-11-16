@@ -33,10 +33,12 @@ class _AdCounterWidgetState extends State<AdCounterWidget> {
             // Popup Overlay Card when floating button is tapped
             if (_showOverlay)
               Positioned(
-                left: (_position.dx + 65 > MediaQuery.of(context).size.width - 270)
+                left: (_position.dx + 65 >
+                        MediaQuery.of(context).size.width - 270)
                     ? MediaQuery.of(context).size.width - 280
                     : _position.dx,
-                top: (_position.dy + 65 > MediaQuery.of(context).size.height - 350)
+                top: (_position.dy + 65 >
+                        MediaQuery.of(context).size.height - 350)
                     ? _position.dy - 340
                     : _position.dy + 60,
                 child: Material(
@@ -117,13 +119,48 @@ class _AdCounterWidgetState extends State<AdCounterWidget> {
                         ),
                         const Divider(height: 8),
                         // Vertical Format Table
-                        _buildRowItem("Interstitial", stats.interLoad, stats.interImp, stats.interFailed, const Color(0xFF3B82F6)),
-                        _buildRowItem("Rewarded", stats.rewardedLoad, stats.rewardedImp, stats.rewardedFailed, const Color(0xFFF59E0B)),
-                        _buildRowItem("Reward Inter", stats.rewardedInterLoad, stats.rewardedInterImp, stats.rewardedInterFailed, const Color(0xFF8B5CF6)),
-                        _buildRowItem("Banner", stats.bannerLoad, stats.bannerImp, stats.bannerFailed, const Color(0xFF10B981)),
-                        _buildRowItem("Small Native", stats.nativeLoadS, stats.nativeImpS, stats.nativeFailedS, const Color(0xFF14B8A6)),
-                        _buildRowItem("Medium Native", stats.nativeLoadM, stats.nativeImpM, stats.nativeFailedM, const Color(0xFF6366F1)),
-                        _buildRowItem("App Open", stats.openAppLoad, stats.openAppImp, stats.openAppFailed, const Color(0xFFEC4899)),
+                        _buildRowItem(
+                            "Interstitial",
+                            stats.interLoad,
+                            stats.interImp,
+                            stats.interFailed,
+                            const Color(0xFF3B82F6)),
+                        _buildRowItem(
+                            "Rewarded",
+                            stats.rewardedLoad,
+                            stats.rewardedImp,
+                            stats.rewardedFailed,
+                            const Color(0xFFF59E0B)),
+                        _buildRowItem(
+                            "Reward Inter",
+                            stats.rewardedInterLoad,
+                            stats.rewardedInterImp,
+                            stats.rewardedInterFailed,
+                            const Color(0xFF8B5CF6)),
+                        _buildRowItem(
+                            "Banner",
+                            stats.bannerLoad,
+                            stats.bannerImp,
+                            stats.bannerFailed,
+                            const Color(0xFF10B981)),
+                        _buildRowItem(
+                            "Small Native",
+                            stats.nativeLoadS,
+                            stats.nativeImpS,
+                            stats.nativeFailedS,
+                            const Color(0xFF14B8A6)),
+                        _buildRowItem(
+                            "Medium Native",
+                            stats.nativeLoadM,
+                            stats.nativeImpM,
+                            stats.nativeFailedM,
+                            const Color(0xFF6366F1)),
+                        _buildRowItem(
+                            "App Open",
+                            stats.openAppLoad,
+                            stats.openAppImp,
+                            stats.openAppFailed,
+                            const Color(0xFFEC4899)),
                       ],
                     ),
                   ),
@@ -165,7 +202,9 @@ class _AdCounterWidgetState extends State<AdCounterWidget> {
                       alignment: Alignment.center,
                       children: [
                         Icon(
-                          _showOverlay ? Icons.close_rounded : Icons.analytics_rounded,
+                          _showOverlay
+                              ? Icons.close_rounded
+                              : Icons.analytics_rounded,
                           color: Colors.white,
                           size: 24,
                         ),

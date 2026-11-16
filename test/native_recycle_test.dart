@@ -15,7 +15,8 @@ void main() {
 
   setUp(() async {
     AdManager.instance.config = await setConfigData(
-      AdConfigData(preloadConfig: const AdPreloadConfig(native: PreloadMode.manual)),
+      AdConfigData(
+          preloadConfig: const AdPreloadConfig(native: PreloadMode.manual)),
       releaseMode: false,
     );
     loader.reset();

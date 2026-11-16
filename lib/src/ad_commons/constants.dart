@@ -87,4 +87,3 @@ enum CollapsibleBannerPosition {
   /// Collapsible banner anchored to top.
   top,
 }
-

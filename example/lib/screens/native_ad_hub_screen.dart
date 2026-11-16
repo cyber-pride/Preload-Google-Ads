@@ -12,7 +12,8 @@ class NativeAdHubScreen extends StatefulWidget {
   State<NativeAdHubScreen> createState() => _NativeAdHubScreenState();
 }
 
-class _NativeAdHubScreenState extends State<NativeAdHubScreen> with SingleTickerProviderStateMixin {
+class _NativeAdHubScreenState extends State<NativeAdHubScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override

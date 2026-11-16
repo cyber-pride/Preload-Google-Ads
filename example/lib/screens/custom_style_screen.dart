@@ -11,7 +11,8 @@ class CustomStyleScreen extends StatefulWidget {
   State<CustomStyleScreen> createState() => _CustomStyleScreenState();
 }
 
-class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTickerProviderStateMixin {
+class _CustomStyleScreenState extends State<CustomStyleScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   // Light Mode Tokens
@@ -45,11 +46,14 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
-        final targetMode = _tabController.index == 1 ? ThemeMode.dark : ThemeMode.light;
+        final targetMode =
+            _tabController.index == 1 ? ThemeMode.dark : ThemeMode.light;
         if (widget.themeProvider != null) {
           widget.themeProvider!.setThemeMode(targetMode);
         } else {
-          PreloadGoogleAds.instance.setThemeMode(_tabController.index == 1 ? AdThemeMode.dark : AdThemeMode.light);
+          PreloadGoogleAds.instance.setThemeMode(
+            _tabController.index == 1 ? AdThemeMode.dark : AdThemeMode.light,
+          );
         }
         // Reload ad on tab switch so new mode styling takes immediate effect
         PreloadGoogleAds.instance.reloadNativeAd(nativeADType: selectedType);
@@ -113,11 +117,16 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                     children: [
                       Expanded(
                         child: Text(
-                          isDarkModeView ? "🌙 DARK THEME PREVIEW" : "☀️ LIGHT THEME PREVIEW",
+                          isDarkModeView
+                              ? "🌙 DARK THEME PREVIEW"
+                              : "☀️ LIGHT THEME PREVIEW",
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
-                            color: isDarkModeView ? Colors.indigoAccent : Colors.indigo,
+                            color:
+                                isDarkModeView
+                                    ? Colors.indigoAccent
+                                    : Colors.indigo,
                             letterSpacing: 0.5,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -126,8 +135,20 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                       const SizedBox(width: 8),
                       SegmentedButton<NativeADType>(
                         segments: const [
-                          ButtonSegment(value: NativeADType.small, label: Text("Small", style: TextStyle(fontSize: 12))),
-                          ButtonSegment(value: NativeADType.medium, label: Text("Medium", style: TextStyle(fontSize: 12))),
+                          ButtonSegment(
+                            value: NativeADType.small,
+                            label: Text(
+                              "Small",
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
+                          ButtonSegment(
+                            value: NativeADType.medium,
+                            label: Text(
+                              "Medium",
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
                         ],
                         selected: {selectedType},
                         onSelectionChanged: (set) {
@@ -141,14 +162,22 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                   // Dedicated Preview Box for current Mode
                   Container(
                     decoration: BoxDecoration(
-                      color: isDarkModeView ? const Color(0xFF1E293B) : Colors.white,
+                      color:
+                          isDarkModeView
+                              ? const Color(0xFF1E293B)
+                              : Colors.white,
                       borderRadius: BorderRadius.circular(btnRadiusVal),
                       border: Border.all(
-                        color: isDarkModeView ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                        color:
+                            isDarkModeView
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFE2E8F0),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: isDarkModeView ? 0.4 : 0.06),
+                          color: Colors.black.withValues(
+                            alpha: isDarkModeView ? 0.4 : 0.06,
+                          ),
                           blurRadius: 8,
                         ),
                       ],
@@ -164,15 +193,21 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                   // Customization Tokens Form Card
                   Card(
                     elevation: 2,
-                    color: isDarkModeView ? const Color(0xFF0F172A) : Colors.white,
+                    color:
+                        isDarkModeView ? const Color(0xFF0F172A) : Colors.white,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isDarkModeView ? "DARK THEME DESIGN TOKENS" : "LIGHT THEME DESIGN TOKENS",
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            isDarkModeView
+                                ? "DARK THEME DESIGN TOKENS"
+                                : "LIGHT THEME DESIGN TOKENS",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                           const Divider(height: 16),
 
@@ -180,10 +215,26 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                           _buildColorSelectorRow(
                             label: "Title Color",
                             currentColor: titleColor,
-                            presets: isDarkModeView
-                                ? const [Color(0xFFF8FAFC), Color(0xFFCBD5E1), Colors.amber, Colors.cyanAccent]
-                                : const [Color(0xFF0F172A), Color(0xFF334155), Colors.indigo, Colors.deepPurple],
-                            onColorSelected: (c) => _updateColor(isDarkModeForm: isDarkModeView, field: 'title', color: c),
+                            presets:
+                                isDarkModeView
+                                    ? const [
+                                      Color(0xFFF8FAFC),
+                                      Color(0xFFCBD5E1),
+                                      Colors.amber,
+                                      Colors.cyanAccent,
+                                    ]
+                                    : const [
+                                      Color(0xFF0F172A),
+                                      Color(0xFF334155),
+                                      Colors.indigo,
+                                      Colors.deepPurple,
+                                    ],
+                            onColorSelected:
+                                (c) => _updateColor(
+                                  isDarkModeForm: isDarkModeView,
+                                  field: 'title',
+                                  color: c,
+                                ),
                           ),
                           const SizedBox(height: 14),
 
@@ -191,10 +242,26 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                           _buildColorSelectorRow(
                             label: "Body Color",
                             currentColor: bodyColor,
-                            presets: isDarkModeView
-                                ? const [Color(0xFF94A3B8), Color(0xFF64748B), Colors.tealAccent, Colors.orangeAccent]
-                                : const [Color(0xFF64748B), Color(0xFF475569), Colors.teal, Colors.brown],
-                            onColorSelected: (c) => _updateColor(isDarkModeForm: isDarkModeView, field: 'body', color: c),
+                            presets:
+                                isDarkModeView
+                                    ? const [
+                                      Color(0xFF94A3B8),
+                                      Color(0xFF64748B),
+                                      Colors.tealAccent,
+                                      Colors.orangeAccent,
+                                    ]
+                                    : const [
+                                      Color(0xFF64748B),
+                                      Color(0xFF475569),
+                                      Colors.teal,
+                                      Colors.brown,
+                                    ],
+                            onColorSelected:
+                                (c) => _updateColor(
+                                  isDarkModeForm: isDarkModeView,
+                                  field: 'body',
+                                  color: c,
+                                ),
                           ),
                           const SizedBox(height: 14),
 
@@ -202,10 +269,26 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                           _buildColorSelectorRow(
                             label: "Button Background",
                             currentColor: buttonBg,
-                            presets: isDarkModeView
-                                ? const [Color(0xFF818CF8), Color(0xFF6366F1), Colors.pinkAccent, Colors.greenAccent]
-                                : const [Color(0xFF6366F1), Colors.blue, Colors.deepOrange, Colors.green],
-                            onColorSelected: (c) => _updateColor(isDarkModeForm: isDarkModeView, field: 'buttonBg', color: c),
+                            presets:
+                                isDarkModeView
+                                    ? const [
+                                      Color(0xFF818CF8),
+                                      Color(0xFF6366F1),
+                                      Colors.pinkAccent,
+                                      Colors.greenAccent,
+                                    ]
+                                    : const [
+                                      Color(0xFF6366F1),
+                                      Colors.blue,
+                                      Colors.deepOrange,
+                                      Colors.green,
+                                    ],
+                            onColorSelected:
+                                (c) => _updateColor(
+                                  isDarkModeForm: isDarkModeView,
+                                  field: 'buttonBg',
+                                  color: c,
+                                ),
                           ),
                           const SizedBox(height: 14),
 
@@ -219,7 +302,12 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                               Colors.yellowAccent,
                               Colors.cyanAccent,
                             ],
-                            onColorSelected: (c) => _updateColor(isDarkModeForm: isDarkModeView, field: 'buttonFg', color: c),
+                            onColorSelected:
+                                (c) => _updateColor(
+                                  isDarkModeForm: isDarkModeView,
+                                  field: 'buttonFg',
+                                  color: c,
+                                ),
                           ),
                           const SizedBox(height: 14),
 
@@ -233,7 +321,12 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                               Colors.deepOrange,
                               Colors.purple,
                             ],
-                            onColorSelected: (c) => _updateColor(isDarkModeForm: isDarkModeView, field: 'tagBg', color: c),
+                            onColorSelected:
+                                (c) => _updateColor(
+                                  isDarkModeForm: isDarkModeView,
+                                  field: 'tagBg',
+                                  color: c,
+                                ),
                           ),
                           const SizedBox(height: 14),
 
@@ -247,7 +340,12 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                               Colors.amberAccent,
                               Colors.lightGreenAccent,
                             ],
-                            onColorSelected: (c) => _updateColor(isDarkModeForm: isDarkModeView, field: 'tagFg', color: c),
+                            onColorSelected:
+                                (c) => _updateColor(
+                                  isDarkModeForm: isDarkModeView,
+                                  field: 'tagFg',
+                                  color: c,
+                                ),
                           ),
                           const SizedBox(height: 14),
 
@@ -255,8 +353,17 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text("Button Radius", style: TextStyle(fontSize: 13)),
-                              Text("${btnRadiusVal.toInt()} px", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                              const Text(
+                                "Button Radius",
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              Text(
+                                "${btnRadiusVal.toInt()} px",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
                             ],
                           ),
                           Slider(
@@ -281,8 +388,17 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text("Tag Radius", style: TextStyle(fontSize: 13)),
-                              Text("${tagRadiusVal.toInt()} px", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                              const Text(
+                                "Tag Radius",
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              Text(
+                                "${tagRadiusVal.toInt()} px",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
                             ],
                           ),
                           Slider(
@@ -306,7 +422,10 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
                           // Button Gradient Toggle Switch
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
-                            title: const Text("Use Button Gradient", style: TextStyle(fontSize: 13)),
+                            title: const Text(
+                              "Use Button Gradient",
+                              style: TextStyle(fontSize: 13),
+                            ),
                             value: useGradient,
                             onChanged: (val) {
                               setState(() {
@@ -352,7 +471,12 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
             ),
             // Custom Color Picker Dialog Button
             GestureDetector(
-              onTap: () => _showColorPickerDialog(label, currentColor, onColorSelected),
+              onTap:
+                  () => _showColorPickerDialog(
+                    label,
+                    currentColor,
+                    onColorSelected,
+                  ),
               child: Container(
                 width: 26,
                 height: 26,
@@ -369,7 +493,11 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
     );
   }
 
-  void _showColorPickerDialog(String label, Color initialColor, Function(Color) onSelect) {
+  void _showColorPickerDialog(
+    String label,
+    Color initialColor,
+    Function(Color) onSelect,
+  ) {
     final List<Color> palette = [
       Colors.red,
       Colors.pink,
@@ -407,27 +535,28 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: palette.map((c) {
-                final isSelected = c.value == initialColor.value;
-                return GestureDetector(
-                  onTap: () {
-                    onSelect(c);
-                    Navigator.of(ctx).pop();
-                  },
-                  child: Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: c,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? Colors.amber : Colors.black26,
-                        width: isSelected ? 3 : 1,
+              children:
+                  palette.map((c) {
+                    final isSelected = c.value == initialColor.value;
+                    return GestureDetector(
+                      onTap: () {
+                        onSelect(c);
+                        Navigator.of(ctx).pop();
+                      },
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: c,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected ? Colors.amber : Colors.black26,
+                            width: isSelected ? 3 : 1,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                    );
+                  }).toList(),
             ),
           ),
           actions: [
@@ -441,7 +570,11 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
     );
   }
 
-  void _updateColor({required bool isDarkModeForm, required String field, required Color color}) {
+  void _updateColor({
+    required bool isDarkModeForm,
+    required String field,
+    required Color color,
+  }) {
     setState(() {
       if (isDarkModeForm) {
         if (field == 'title') darkTitleColor = color;
@@ -462,7 +595,11 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
     _syncConfigLive();
   }
 
-  Widget _colorCircle(Color color, Color currentColor, Function(Color) onSelect) {
+  Widget _colorCircle(
+    Color color,
+    Color currentColor,
+    Function(Color) onSelect,
+  ) {
     final isSelected = currentColor.value == color.value;
     return GestureDetector(
       onTap: () => onSelect(color),
@@ -482,7 +619,8 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
   }
 
   Future<void> _syncConfigLive({bool reloadAd = false}) async {
-    final adMode = _tabController.index == 1 ? AdThemeMode.dark : AdThemeMode.light;
+    final adMode =
+        _tabController.index == 1 ? AdThemeMode.dark : AdThemeMode.light;
 
     await PreloadGoogleAds.instance.initialize(
       adConfigData: AdConfigData(
@@ -497,9 +635,20 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
             tagForeground: lightTagFg,
             buttonRadius: lightButtonRadius.toInt(),
             tagRadius: lightTagRadius.toInt(),
-            buttonGradients: lightUseGradient ? [lightButtonBg, lightTagBg] : [],
-            smallBoxConstrain: const BoxConstraints(minWidth: 280, minHeight: 90, maxWidth: 400, maxHeight: 150),
-            mediumBoxConstrain: const BoxConstraints(minWidth: 280, minHeight: 250, maxWidth: 400, maxHeight: 380),
+            buttonGradients:
+                lightUseGradient ? [lightButtonBg, lightTagBg] : [],
+            smallBoxConstrain: const BoxConstraints(
+              minWidth: 280,
+              minHeight: 90,
+              maxWidth: 400,
+              maxHeight: 150,
+            ),
+            mediumBoxConstrain: const BoxConstraints(
+              minWidth: 280,
+              minHeight: 250,
+              maxWidth: 400,
+              maxHeight: 380,
+            ),
           ),
           darkCustomNativeADStyle: CustomNativeADStyle.dark(
             titleColor: darkTitleColor,
@@ -511,15 +660,27 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
             buttonRadius: darkButtonRadius.toInt(),
             tagRadius: darkTagRadius.toInt(),
             buttonGradients: darkUseGradient ? [darkButtonBg, darkTagBg] : [],
-            smallBoxConstrain: const BoxConstraints(minWidth: 280, minHeight: 90, maxWidth: 400, maxHeight: 150),
-            mediumBoxConstrain: const BoxConstraints(minWidth: 280, minHeight: 250, maxWidth: 400, maxHeight: 380),
+            smallBoxConstrain: const BoxConstraints(
+              minWidth: 280,
+              minHeight: 90,
+              maxWidth: 400,
+              maxHeight: 150,
+            ),
+            mediumBoxConstrain: const BoxConstraints(
+              minWidth: 280,
+              minHeight: 250,
+              maxWidth: 400,
+              maxHeight: 380,
+            ),
           ),
         ),
       ),
     );
 
     if (widget.themeProvider != null) {
-      widget.themeProvider!.setThemeMode(_tabController.index == 1 ? ThemeMode.dark : ThemeMode.light);
+      widget.themeProvider!.setThemeMode(
+        _tabController.index == 1 ? ThemeMode.dark : ThemeMode.light,
+      );
     } else {
       await PreloadGoogleAds.instance.setThemeMode(adMode);
     }
@@ -536,5 +697,3 @@ class _CustomStyleScreenState extends State<CustomStyleScreen> with SingleTicker
     }
   }
 }
-
-

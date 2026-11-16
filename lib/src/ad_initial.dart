@@ -39,8 +39,10 @@ class PreloadGoogleAds {
   }
 
   /// Force reloads native ad instances for [nativeADType] (Small or Medium).
-  Future<void> reloadNativeAd({NativeADType? nativeADType, BuildContext? context}) async {
-    await _adManager.reloadNativeAd(nativeADType: nativeADType, context: context);
+  Future<void> reloadNativeAd(
+      {NativeADType? nativeADType, BuildContext? context}) async {
+    await _adManager.reloadNativeAd(
+        nativeADType: nativeADType, context: context);
   }
 
   /// Triggers background re-fetching of any missing or failed ads (e.g. after network connection returns).
@@ -82,7 +84,8 @@ class PreloadGoogleAds {
   /// Displays a collapsible banner ad anchored to [CollapsibleBannerPosition.bottom] or [CollapsibleBannerPosition.top].
   Widget showCollapsibleBannerAd({
     Key? key,
-    CollapsibleBannerPosition collapsiblePosition = CollapsibleBannerPosition.bottom,
+    CollapsibleBannerPosition collapsiblePosition =
+        CollapsibleBannerPosition.bottom,
   }) {
     return ShowCollapsibleBannerAd(
       key: key,
@@ -162,7 +165,8 @@ class PreloadGoogleAds {
   Future<bool> preloadBannerAd() => _adManager.preloadBannerAd();
 
   /// Preloads a native ad of [nativeADType] for the next [showNativeAd].
-  Future<bool> preloadNativeAd({NativeADType nativeADType = NativeADType.medium}) =>
+  Future<bool> preloadNativeAd(
+          {NativeADType nativeADType = NativeADType.medium}) =>
       _adManager.preloadNativeAd(nativeADType: nativeADType);
 
   /// Whether the app must offer a "Privacy settings" entry point.

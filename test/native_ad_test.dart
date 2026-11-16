@@ -22,7 +22,8 @@ void main() {
 
       loader.reset();
       await Future.delayed(const Duration(milliseconds: 120));
-      expect(timerFired, isFalse, reason: 'Pending reload timer must be cancelled on reset.');
+      expect(timerFired, isFalse,
+          reason: 'Pending reload timer must be cancelled on reset.');
     });
 
     test('LoadSmallNative properties and counter tracking', () {
@@ -48,7 +49,8 @@ void main() {
       );
 
       expect(widget, isA<Widget>());
-      expect((widget as KeyedSubtree).key, equals(const ValueKey("test_native_key")));
+      expect((widget as KeyedSubtree).key,
+          equals(const ValueKey("test_native_key")));
     });
   });
 }

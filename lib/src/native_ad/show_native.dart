@@ -24,7 +24,8 @@ class _ShowNativeState extends State<ShowNative> {
   void initState() {
     super.initState();
     final isSmall = widget.nativeADType == NativeADType.small;
-    final loader = isSmall ? LoadSmallNative.instance : LoadMediumNative.instance;
+    final loader =
+        isSmall ? LoadSmallNative.instance : LoadMediumNative.instance;
 
     final countReached =
         loader.counter >= getNativeCounter || loader.isFirstAdPending;

@@ -15,15 +15,18 @@ AdConfigData preData = AdConfigData(
     rewardedInterstitialId: AdTestIds.rewardedInterstitial,
   ),
   adCounter: AdCounter(
-    showAdFirst: false,
     // Show an interstitial on every 3rd trigger by default. Showing one on
     // every action is disruptive and risks AdMob's interstitial policy.
+    interstitialShowAdFirst: false,
     interstitialCounter: 3,
     interstitialSeconds: 0,
+    nativeShowAdFirst: false,
     nativeCounter: 0,
     nativeSeconds: 0,
+    rewardedShowAdFirst: false,
     rewardedCounter: 0,
     rewardedSeconds: 0,
+    rewardedInterstitialShowAdFirst: false,
     rewardedInterstitialCounter: 0,
     rewardedInterstitialSeconds: 0,
   ),
@@ -80,7 +83,8 @@ bool? _resolveFlag(
       );
       return false;
     }
-    AppLogger.warn('$label: no ad unit ID provided, using Google test ID (debug only).');
+    AppLogger.warn(
+        '$label: no ad unit ID provided, using Google test ID (debug only).');
   } else if (releaseMode && isTestAdUnitId(providedId)) {
     debugPrint(
       'PreloadGoogleAds: $label is using a Google TEST ad unit ID in a release '
@@ -136,26 +140,33 @@ Future<AdConfigData> setConfigData(
           fallback.adIDs?.rewardedInterstitialId,
     ),
     adCounter: AdCounter(
-      showAdFirst: adConfig?.adCounter?.showAdFirst ??
-          fallback.adCounter?.showAdFirst,
+      interstitialShowAdFirst: adConfig?.adCounter?.interstitialShowAdFirst ??
+          fallback.adCounter?.interstitialShowAdFirst,
       interstitialCounter: adConfig?.adCounter?.interstitialCounter ??
           fallback.adCounter?.interstitialCounter,
-      nativeCounter: adConfig?.adCounter?.nativeCounter ??
-          fallback.adCounter?.nativeCounter,
+      interstitialSeconds: adConfig?.adCounter?.interstitialSeconds ??
+          fallback.adCounter?.interstitialSeconds,
+      rewardedShowAdFirst: adConfig?.adCounter?.rewardedShowAdFirst ??
+          fallback.adCounter?.rewardedShowAdFirst,
       rewardedCounter: adConfig?.adCounter?.rewardedCounter ??
           fallback.adCounter?.rewardedCounter,
+      rewardedSeconds: adConfig?.adCounter?.rewardedSeconds ??
+          fallback.adCounter?.rewardedSeconds,
+      rewardedInterstitialShowAdFirst:
+          adConfig?.adCounter?.rewardedInterstitialShowAdFirst ??
+              fallback.adCounter?.rewardedInterstitialShowAdFirst,
       rewardedInterstitialCounter:
           adConfig?.adCounter?.rewardedInterstitialCounter ??
               fallback.adCounter?.rewardedInterstitialCounter,
-      interstitialSeconds: adConfig?.adCounter?.interstitialSeconds ??
-          fallback.adCounter?.interstitialSeconds,
-      nativeSeconds: adConfig?.adCounter?.nativeSeconds ??
-          fallback.adCounter?.nativeSeconds,
-      rewardedSeconds: adConfig?.adCounter?.rewardedSeconds ??
-          fallback.adCounter?.rewardedSeconds,
       rewardedInterstitialSeconds:
           adConfig?.adCounter?.rewardedInterstitialSeconds ??
               fallback.adCounter?.rewardedInterstitialSeconds,
+      nativeShowAdFirst: adConfig?.adCounter?.nativeShowAdFirst ??
+          fallback.adCounter?.nativeShowAdFirst,
+      nativeCounter: adConfig?.adCounter?.nativeCounter ??
+          fallback.adCounter?.nativeCounter,
+      nativeSeconds: adConfig?.adCounter?.nativeSeconds ??
+          fallback.adCounter?.nativeSeconds,
     ),
     adFlag: AdFlag(
       showAd: adConfig?.adFlag?.showAd ?? fallback.adFlag?.showAd,
@@ -207,21 +218,26 @@ Future<AdConfigData> setConfigData(
           fallback.nativeADLayout?.adLayout,
       customNativeADStyle: adConfig?.nativeADLayout?.customNativeADStyle ??
           fallback.nativeADLayout?.customNativeADStyle,
-      darkCustomNativeADStyle: adConfig?.nativeADLayout?.darkCustomNativeADStyle ??
-          fallback.nativeADLayout?.darkCustomNativeADStyle,
+      darkCustomNativeADStyle:
+          adConfig?.nativeADLayout?.darkCustomNativeADStyle ??
+              fallback.nativeADLayout?.darkCustomNativeADStyle,
       flutterNativeADStyle: adConfig?.nativeADLayout?.flutterNativeADStyle ??
           fallback.nativeADLayout?.flutterNativeADStyle,
-      darkFlutterNativeADStyle: adConfig?.nativeADLayout?.darkFlutterNativeADStyle ??
-          fallback.nativeADLayout?.darkFlutterNativeADStyle,
+      darkFlutterNativeADStyle:
+          adConfig?.nativeADLayout?.darkFlutterNativeADStyle ??
+              fallback.nativeADLayout?.darkFlutterNativeADStyle,
     ),
     bannerADLayout: BannerADLayout(
       lightDecoration: adConfig?.bannerADLayout?.lightDecoration ??
           fallback.bannerADLayout?.lightDecoration,
       darkDecoration: adConfig?.bannerADLayout?.darkDecoration ??
           fallback.bannerADLayout?.darkDecoration,
-      margin: adConfig?.bannerADLayout?.margin ?? fallback.bannerADLayout?.margin,
-      padding: adConfig?.bannerADLayout?.padding ?? fallback.bannerADLayout?.padding,
-      adSize: adConfig?.bannerADLayout?.adSize ?? fallback.bannerADLayout?.adSize,
+      margin:
+          adConfig?.bannerADLayout?.margin ?? fallback.bannerADLayout?.margin,
+      padding:
+          adConfig?.bannerADLayout?.padding ?? fallback.bannerADLayout?.padding,
+      adSize:
+          adConfig?.bannerADLayout?.adSize ?? fallback.bannerADLayout?.adSize,
     ),
   );
 }
@@ -457,8 +473,20 @@ int get getRewardedSeconds => config.adCounter?.rewardedSeconds ?? 0;
 int get getRewardedInterSeconds =>
     config.adCounter?.rewardedInterstitialSeconds ?? 0;
 
-/// Whether the first trigger of each format shows an ad before counting.
-bool get getShowAdFirst => config.adCounter?.showAdFirst ?? false;
+/// Whether the first interstitial call shows an ad before counting.
+bool get getInterShowAdFirst =>
+    config.adCounter?.interstitialShowAdFirst ?? false;
+
+/// Whether the first rewarded call shows an ad before counting.
+bool get getRewardedShowAdFirst =>
+    config.adCounter?.rewardedShowAdFirst ?? false;
+
+/// Whether the first rewarded interstitial call shows an ad before counting.
+bool get getRewardedInterShowAdFirst =>
+    config.adCounter?.rewardedInterstitialShowAdFirst ?? false;
+
+/// Whether the first native placement shows an ad before counting.
+bool get getNativeShowAdFirst => config.adCounter?.nativeShowAdFirst ?? false;
 
 /// Gets the rewarded interstitial ad counter.
 int get getRewardedInterCounter =>

@@ -28,6 +28,9 @@ class InterAd extends BaseAdLoader {
   @override
   int get minSecondsBetweenAds => getInterSeconds;
 
+  @override
+  bool get showAdFirst => getInterShowAdFirst;
+
   /// The interstitial ad object.
   InterstitialAd? _interstitialAd;
 
@@ -60,6 +63,7 @@ class InterAd extends BaseAdLoader {
       );
     } catch (error) {
       state = AdLoadState.failed;
+
       /// Disposes the ad if any error occurs.
       _interstitialAd?.dispose();
       _interstitialAd = null;

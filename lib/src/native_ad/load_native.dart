@@ -122,6 +122,9 @@ abstract class BaseNativeAdLoader extends BaseAdLoader {
   int get minSecondsBetweenAds => getNativeSeconds;
 
   @override
+  bool get showAdFirst => getNativeShowAdFirst;
+
+  @override
   bool get hasReadyAd => ads.any(_isFresh);
 
   @override

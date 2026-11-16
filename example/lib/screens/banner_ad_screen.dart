@@ -12,7 +12,8 @@ class BannerAdScreen extends StatefulWidget {
 }
 
 class _BannerAdScreenState extends State<BannerAdScreen> {
-  CollapsibleBannerPosition collapsiblePosition = CollapsibleBannerPosition.bottom;
+  CollapsibleBannerPosition collapsiblePosition =
+      CollapsibleBannerPosition.bottom;
   int previewKey = 0;
 
   @override
@@ -20,9 +21,7 @@ class _BannerAdScreenState extends State<BannerAdScreen> {
     final isDark = widget.themeProvider.isDarkMode(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Banner Ad Hub"),
-      ),
+      appBar: AppBar(title: const Text("Banner Ad Hub")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -33,15 +32,19 @@ class _BannerAdScreenState extends State<BannerAdScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isDark
-                      ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                      : [const Color(0xFFEEF2FF), const Color(0xFFE0E7FF)],
+                  colors:
+                      isDark
+                          ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                          : [const Color(0xFFEEF2FF), const Color(0xFFE0E7FF)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark ? const Color(0xFF334155) : const Color(0xFFC7D2FE),
+                  color:
+                      isDark
+                          ? const Color(0xFF334155)
+                          : const Color(0xFFC7D2FE),
                 ),
               ),
               child: Column(
@@ -49,11 +52,17 @@ class _BannerAdScreenState extends State<BannerAdScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.view_stream_rounded, color: isDark ? Colors.indigoAccent : Colors.indigo),
+                      Icon(
+                        Icons.view_stream_rounded,
+                        color: isDark ? Colors.indigoAccent : Colors.indigo,
+                      ),
                       const SizedBox(width: 8),
                       const Text(
                         "Banner & Collapsible Banner Ads",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ],
                   ),
@@ -81,9 +90,7 @@ class _BannerAdScreenState extends State<BannerAdScreen> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: Center(
-                  child: PreloadGoogleAds.instance.showBannerAd(),
-                ),
+                child: Center(child: PreloadGoogleAds.instance.showBannerAd()),
               ),
             ),
             const SizedBox(height: 24),
@@ -105,7 +112,13 @@ class _BannerAdScreenState extends State<BannerAdScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Select Collapsible Anchor Position:", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                    const Text(
+                      "Select Collapsible Anchor Position:",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     SegmentedButton<CollapsibleBannerPosition>(
                       segments: const [
@@ -133,12 +146,17 @@ class _BannerAdScreenState extends State<BannerAdScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0F172A) : Colors.grey.shade100,
+                        color:
+                            isDark
+                                ? const Color(0xFF0F172A)
+                                : Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
                         child: PreloadGoogleAds.instance.showCollapsibleBannerAd(
-                          key: ValueKey("col_banner_${collapsiblePosition.name}_$previewKey"),
+                          key: ValueKey(
+                            "col_banner_${collapsiblePosition.name}_$previewKey",
+                          ),
                           collapsiblePosition: collapsiblePosition,
                         ),
                       ),
