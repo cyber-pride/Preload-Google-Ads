@@ -74,6 +74,18 @@ class _BannerAdScreenState extends State<BannerAdScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+
+            // Opens a separate page with a banner to test banner reuse.
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed:
+                    () => Navigator.pushNamed(context, '/banner-test'),
+                icon: const Icon(Icons.open_in_new_rounded),
+                label: const Text("Open Banner Test Page"),
+              ),
+            ),
             const SizedBox(height: 24),
 
             // Standard Banner Section

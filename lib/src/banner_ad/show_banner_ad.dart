@@ -50,10 +50,15 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
         listener: BannerAdListener(
           onAdLoaded: (Ad ad) {
             AdStats.instance.bannerLoad.value++;
+            LoadBannerAd.instance.markLoaded(ad);
+            // A refresh: the banner may by now be shown by another widget
+            // (it went back to the pool), so this state must not touch it.
+            if (initialLoadDone) return;
             initialLoadDone = true;
             if (!mounted) {
-              // Widget left the screen before the ad arrived: release it.
-              ad.dispose();
+              // Widget left the screen before the ad arrived: keep it for the
+              // next placement instead of wasting the request.
+              LoadBannerAd.instance.returnBanner(ad as BannerAd);
               return;
             }
             setState(() {
@@ -77,7 +82,10 @@ class _ShowBannerAdState extends State<ShowBannerAd> {
 
   @override
   void dispose() {
-    banner?.dispose();
+    // Keep the loaded banner for the next placement instead of destroying it.
+    final ad = banner;
+    banner = null;
+    if (ad != null) LoadBannerAd.instance.returnBanner(ad);
     super.dispose();
   }
 

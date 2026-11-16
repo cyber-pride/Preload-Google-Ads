@@ -8,6 +8,7 @@ import 'screens/native_list_screen.dart';
 import 'screens/custom_style_screen.dart';
 import 'screens/banner_ad_screen.dart';
 import 'screens/format_lab_screen.dart';
+import 'screens/banner_test_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +16,7 @@ void main() async {
   // Initialize Preload Google Ads SDK with Light & Dark mode styling configuration
   await PreloadGoogleAds.instance.initialize(
     adConfigData: AdConfigData(
-      /**
+
       preloadConfig: AdPreloadConfig(
         interstitial: PreloadMode.manual,
         rewarded: PreloadMode.manual,
@@ -23,7 +24,7 @@ void main() async {
         native: PreloadMode.manual,
         banner: PreloadMode.manual,
         appOpen: PreloadMode.manual,
-      ),**/
+      ),
       adCounter: AdCounter(
         interstitialShowAdFirst: true,
         interstitialCounter: 3,
@@ -97,6 +98,9 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
       darkTheme: AppTheme.darkTheme,
       themeMode: _themeProvider.themeMode,
       home: MainNavigationContainer(themeProvider: _themeProvider),
+      routes: {
+        BannerTestPage.routeName: (_) => const BannerTestPage(),
+      },
     );
   }
 }

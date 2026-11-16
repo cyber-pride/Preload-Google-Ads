@@ -131,6 +131,51 @@ void main() {
     });
   });
 
+  group('Banner reuse', () {
+    test('a returned banner is reused by the next placement', () async {
+      await useConfig(manual);
+      final loader = LoadBannerAd.instance;
+      final ad = fakeBanner();
+      loader.markLoaded(ad);
+
+      loader.returnBanner(ad);
+      expect(loader.state, AdLoadState.ready);
+      expect(loader.hasReadyAd, isTrue);
+      expect(identical(loader.takeBanner(), ad), isTrue);
+      expect(loader.state, AdLoadState.initial, reason: 'No refill request.');
+    });
+
+    test('the pool keeps at most one banner', () async {
+      await useConfig(manual);
+      final loader = LoadBannerAd.instance;
+      final first = fakeBanner();
+      loader.returnBanner(first);
+      loader.returnBanner(fakeBanner());
+
+      expect(loader.bannerAdObject.length, 1);
+      expect(identical(loader.bannerAdObject.first, first), isTrue);
+    });
+
+    test('a returned banner does not disturb an in-flight request', () async {
+      await useConfig(manual);
+      final loader = LoadBannerAd.instance;
+      loader.state = AdLoadState.loading;
+      final ad = fakeBanner();
+
+      loader.returnBanner(ad);
+      expect(loader.state, AdLoadState.loading);
+      expect(identical(loader.takeBanner(), ad), isTrue);
+      expect(loader.state, AdLoadState.loading);
+    });
+
+    test('a returned banner is dropped without consent', () async {
+      await useConfig(manual);
+      AdManager.instance.canRequestAds = false;
+      LoadBannerAd.instance.returnBanner(fakeBanner());
+      expect(LoadBannerAd.instance.bannerAdObject, isEmpty);
+    });
+  });
+
   group('preload()', () {
     test('returns false before the SDK has started', () async {
       AdManager.instance.debugSdkStarted = false;
