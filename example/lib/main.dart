@@ -16,7 +16,7 @@ void main() async {
   // Initialize Preload Google Ads SDK with Light & Dark mode styling configuration
   await PreloadGoogleAds.instance.initialize(
     adConfigData: AdConfigData(
-
+/**
       preloadConfig: AdPreloadConfig(
         interstitial: PreloadMode.manual,
         rewarded: PreloadMode.manual,
@@ -24,7 +24,7 @@ void main() async {
         native: PreloadMode.manual,
         banner: PreloadMode.manual,
         appOpen: PreloadMode.manual,
-      ),
+      ),**/
       adCounter: AdCounter(
         interstitialShowAdFirst: true,
         interstitialCounter: 3,
@@ -192,7 +192,7 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
         ),
 
         // Global Draggable Floating Metrics Overlay
-        PreloadGoogleAds.instance.showAdCounter(showCounter: true),
+        PreloadGoogleAds.instance.showAdCounter(),
       ],
     );
   }
