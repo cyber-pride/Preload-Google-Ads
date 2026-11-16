@@ -67,7 +67,7 @@ void main() {
     expect(InterAd.instance.hasTimeGapPassed, isTrue);
   });
 
-  test('count reached too soon: no ad, count kept, ad loads meanwhile',
+  test('count reached too soon: no ad, count kept, load waits for the gap',
       () async {
     await useConfig(AdConfigData(
       adCounter: AdCounter(interstitialCounter: 3, interstitialSeconds: 120),
@@ -83,11 +83,70 @@ void main() {
       expect(called, isTrue);
     }
     expect(inter.counter, 4, reason: 'Count is kept until an ad shows.');
-    expect(inter.state, AdLoadState.loading,
-        reason: 'Count reached: the ad is fetched so it is ready in time.');
+    expect(inter.state, AdLoadState.initial,
+        reason: '120s gap left: loading now would leave the ad unused.');
+    expect(inter.isTimeGapLoadScheduled, isTrue,
+        reason: 'A load is scheduled for shortly before the gap ends.');
 
     inter.lastAdShownTime = secondsAgo(120);
     expect(inter.hasTimeGapPassed, isTrue);
+  });
+
+  test('next ad loads once the gap is within the load lead', () async {
+    await useConfig(AdConfigData(
+      adCounter: AdCounter(interstitialCounter: 1, interstitialSeconds: 60),
+    ));
+    final inter = InterAd.instance;
+
+    inter.resetCounter(); // shown just now
+    inter.autoLoadIfDue(); // as dismissing the ad does
+    expect(inter.isLoadDue, isFalse);
+    expect(inter.state, AdLoadState.initial);
+    expect(inter.isTimeGapLoadScheduled, isTrue);
+
+    inter.lastAdShownTime = secondsAgo(55); // 5s left, inside the 10s lead
+    expect(inter.isLoadDue, isTrue);
+    inter.autoLoadIfDue();
+    expect(inter.state, AdLoadState.loading);
+    expect(inter.isTimeGapLoadScheduled, isFalse);
+  });
+
+  test('the scheduled load fires before the gap ends', () async {
+    await useConfig(AdConfigData(
+      adCounter: AdCounter(rewardedCounter: 1, rewardedSeconds: 30),
+    ));
+    final rewarded = RewardAd.instance;
+    // 11s left: the load is due in ~1s (10s lead).
+    rewarded.lastAdShownTime = secondsAgo(19);
+    rewarded.autoLoadIfDue();
+    expect(rewarded.state, AdLoadState.initial);
+    expect(rewarded.isTimeGapLoadScheduled, isTrue);
+
+    await Future<void>.delayed(const Duration(milliseconds: 1200));
+    expect(rewarded.state, AdLoadState.loading);
+  });
+
+  test('counter not due: nothing is scheduled', () async {
+    await useConfig(AdConfigData(
+      adCounter: AdCounter(interstitialCounter: 3, interstitialSeconds: 60),
+    ));
+    final inter = InterAd.instance;
+    inter.resetCounter();
+    inter.autoLoadIfDue();
+    expect(inter.isTimeGapLoadScheduled, isFalse);
+    expect(inter.state, AdLoadState.initial);
+  });
+
+  test('reset cancels a scheduled load', () async {
+    await useConfig(AdConfigData(
+      adCounter: AdCounter(interstitialCounter: 1, interstitialSeconds: 60),
+    ));
+    final inter = InterAd.instance;
+    inter.resetCounter();
+    inter.autoLoadIfDue();
+    expect(inter.isTimeGapLoadScheduled, isTrue);
+    inter.reset();
+    expect(inter.isTimeGapLoadScheduled, isFalse);
   });
 
   test('first ad has no previous ad, so the gap does not block it', () async {

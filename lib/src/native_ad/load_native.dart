@@ -66,7 +66,11 @@ abstract class BaseNativeAdLoader extends BaseAdLoader {
     }
     final ad = ads.isNotEmpty ? ads.removeAt(0) : null;
     _syncPoolState();
-    if ((isAutoPreload && isLoadDue) || ad == null) loadAd();
+    if (ad == null) {
+      loadAd();
+    } else {
+      autoLoadIfDue();
+    }
     return ad;
   }
 

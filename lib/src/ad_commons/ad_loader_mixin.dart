@@ -49,7 +49,20 @@ abstract class BaseAdLoader with AdLoaderMixin {
   /// previous show: with a limit of 3 the ad loads on the 2nd trigger and
   /// shows on the 3rd. A request made earlier would sit unused (or expire)
   /// while the user is still counting up, which lowers show rate.
-  bool get isLoadDue => isFirstAdPending || counter + 1 >= counterLimit;
+  ///
+  /// The format's time gap ([minSecondsBetweenAds]) counts too: while the
+  /// count is due but the gap still has more than [timeGapLoadLead] left,
+  /// loading waits, so the ad is fresh when the gap ends instead of sitting
+  /// unused (see [autoLoadIfDue], which schedules that load).
+  bool get isLoadDue =>
+      isFirstAdPending || (isCountDue && timeGapRemaining <= timeGapLoadLead);
+
+  /// Whether the next trigger reaches the counter (ignoring the time gap).
+  bool get isCountDue => counter + 1 >= counterLimit;
+
+  /// How long before the time gap ends the next ad starts loading, so it is
+  /// ready on the first trigger after the gap.
+  static const Duration timeGapLoadLead = Duration(seconds: 10);
 
   /// Minimum seconds between two ads of this format ([AdCounter]'s
   /// `…Seconds`). Formats without a counter keep 0 (no limit).
@@ -63,9 +76,47 @@ abstract class BaseAdLoader with AdLoaderMixin {
     return DateTime.now().difference(last).inSeconds >= minSecondsBetweenAds;
   }
 
+  /// Time left until [minSecondsBetweenAds] have passed since the last ad of
+  /// this format; [Duration.zero] once passed (or with no limit).
+  Duration get timeGapRemaining {
+    final last = lastAdShownTime;
+    if (last == null || minSecondsBetweenAds <= 0) return Duration.zero;
+    final left = Duration(seconds: minSecondsBetweenAds) -
+        DateTime.now().difference(last);
+    return left.isNegative ? Duration.zero : left;
+  }
+
+  Timer? _timeGapLoadTimer;
+
+  /// Whether a load is scheduled for the end of the time gap.
+  @visibleForTesting
+  bool get isTimeGapLoadScheduled => _timeGapLoadTimer?.isActive ?? false;
+
+  void _cancelTimeGapLoad() {
+    _timeGapLoadTimer?.cancel();
+    _timeGapLoadTimer = null;
+  }
+
   /// In [PreloadMode.auto], loads an ad if the next trigger can show it.
+  ///
+  /// When only the time gap holds it back, the load is scheduled for
+  /// [timeGapLoadLead] before the gap ends.
   void autoLoadIfDue() {
-    if (isAutoPreload && isLoadDue) load();
+    if (!isAutoPreload) return;
+    if (isLoadDue) {
+      _cancelTimeGapLoad();
+      load();
+      return;
+    }
+    if (!isCountDue || isTimeGapLoadScheduled) return;
+    if (isLoading || hasReadyAd) return;
+    final wait = timeGapRemaining - timeGapLoadLead;
+    AppLogger.log("$adLabel: next ad loads in ${wait.inSeconds}s "
+        "(${minSecondsBetweenAds}s between ads).");
+    _timeGapLoadTimer = Timer(wait, () {
+      _timeGapLoadTimer = null;
+      if (isEnabled && !hasReadyAd) autoLoadIfDue();
+    });
   }
 
   /// Disposes the cached ad (if any) without touching the frequency counter.
@@ -229,6 +280,7 @@ abstract class BaseAdLoader with AdLoaderMixin {
   @override
   void reset() {
     cancelReloadTimer();
+    _cancelTimeGapLoad();
     notifyPreloadResult(false);
     super.reset();
   }

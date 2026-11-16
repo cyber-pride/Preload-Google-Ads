@@ -27,7 +27,7 @@ void main() async {
       adCounter: AdCounter(
         interstitialShowAdFirst: true,
         interstitialCounter: 3,
-        interstitialSeconds: 10,
+        interstitialSeconds: 20,
         rewardedCounter: 0,
       ),
       nativeADLayout: NativeADLayout(
